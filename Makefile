@@ -2,7 +2,7 @@ N64KITDIR	= c:/nintendo/n64kit
 
 TARGET = arkanoid
 CODEFILES = main.c controller.c render.c sprite.c \
-hash.c file.c stagelogo.c \
+hash.c file.c stagegame.c \
 
 OTHERFILES = 
 

@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sprite>
-	<animations>
-		<animation id="textswap">
-			<frame image="hello" delay="9"/>
-			<frame image="world" delay="9"/>
-		</animation>
-	</animations>
 	<images>
-		<image filename="n64brew/logo.png" id="n64brew" format="rgba32"/>
-		<image filename="n64brew/hello.png" id="hello" format="ia4" origin_x="0.0" origin_y="0.0"/>
-		<image filename="n64brew/world.png" id="world" format="ia4" origin_x="0.0" origin_y="0.0"/>
+		<image filename="n64brew/logo.png" id="logo"/>
 	</images>
 </sprite>

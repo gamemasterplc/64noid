@@ -11,7 +11,7 @@ typedef struct stage_entry {
 } StageEntry;
 
 typedef enum stage_id {
-	STAGE_LOGO = 0,
+	STAGE_GAME = 0,
 	STAGE_MAX,
 	STAGE_NONE = -1
 } StageID;
