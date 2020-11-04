@@ -16,9 +16,9 @@ static void *framebuf_list[MAX_FRAMEBUFS];
 static void *framebuf_base;
 static int fb_width;
 static int fb_height;
-static N64Rect curr_clip;
 
-Gfx *gbi_ptr;
+Gfx *render_dl_ptr;
+int render_mode;
 
 #ifdef ENABLE_FPS_COUNTER
 static u8 fps_digits[] __attribute__((aligned(8))) = {
@@ -156,51 +156,44 @@ void RenderSetSize(int width, int height)
 	nuGfxSetCfb((u16 **)framebuf_list, MAX_FRAMEBUFS);
 }
 
-static void FlushClipRect()
-{
-	gDPSetScissor(gbi_ptr++, G_SC_NON_INTERLACE, curr_clip.left, curr_clip.top, curr_clip.right, curr_clip.bottom);
-}
-
 void RenderClear(u8 r, u8 g, u8 b)
 {
-	gDPSetCycleType(gbi_ptr++, G_CYC_FILL);
+	gDPSetCycleType(render_dl_ptr++, G_CYC_FILL);
 	#ifdef FRAMEBUF_32BIT
-	gDPSetFillColor(gbi_ptr++, (r << 24)|(g << 16)|(b << 8)|255);
+	gDPSetFillColor(render_dl_ptr++, (r << 24)|(g << 16)|(b << 8)|255);
 	#else
-	gDPSetFillColor(gbi_ptr++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
+	gDPSetFillColor(render_dl_ptr++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
 	#endif
-	gDPFillRectangle(gbi_ptr++, 0, 0, fb_width-1, fb_height-1);
-	gDPPipeSync(gbi_ptr++);
-	gDPSetCycleType(gbi_ptr++, G_CYC_1CYCLE);
+	gDPFillRectangle(render_dl_ptr++, 0, 0, fb_width-1, fb_height-1);
+	gDPPipeSync(render_dl_ptr++);
+	gDPSetCycleType(render_dl_ptr++, G_CYC_1CYCLE);
 }
 
-void RenderSetClipRect(N64Rect *clip)
+void RenderSetScissor(int x, int y, int w, int h)
 {
-	curr_clip = *clip;
-	FlushClipRect();
+	gDPSetScissor(render_dl_ptr++, G_SC_NON_INTERLACE, x, y, x+w, y+h);
 }
 
-void RenderResetClipRect()
+void RenderResetScissor()
 {
-	curr_clip.left = 0;
-	curr_clip.top = 0;
-	curr_clip.right = fb_width;
-	curr_clip.bottom = fb_height;
-	FlushClipRect();
+	gDPSetScissor(render_dl_ptr++, G_SC_NON_INTERLACE, 0, 0, fb_width, fb_height);
 }
 
 void RenderStartFrame()
 {
-	gbi_ptr = gbi_list[gbi_list_idx];
+	render_dl_ptr = gbi_list[gbi_list_idx];
     // Set the segment register
-    gSPSegment(gbi_ptr++, 0, 0);
-    gSPDisplayList(gbi_ptr++, OS_K0_TO_PHYSICAL(rdpinit_dl));
+    gSPSegment(render_dl_ptr++, 0, 0);
+    gSPDisplayList(render_dl_ptr++, OS_K0_TO_PHYSICAL(rdpinit_dl));
 	#ifdef FRAMEBUF_32BIT
-	gDPSetColorImage(gbi_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_32b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
+	gDPSetColorImage(render_dl_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_32b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
 	#else
-	gDPSetColorImage(gbi_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
+	gDPSetColorImage(render_dl_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
 	#endif
-	RenderResetClipRect();
+	render_mode = RENDER_MODE_IMAGE;
+	gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
+	gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+	RenderResetScissor();
 }
 
 #ifdef ENABLE_FPS_COUNTER
@@ -219,13 +212,16 @@ static void DrawFPS()
 			fps = 99;
 		}
 		last_time = this_time;
-		gDPSetCombineMode(gbi_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
-		gDPSetRenderMode(gbi_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-		gDPSetTextureLUT(gbi_ptr++, G_TT_NONE);
-		gDPLoadTextureTile_4b(gbi_ptr++, fps_digits, G_IM_FMT_IA, 80, 8, 0, 0, 79, 7, 0, G_TX_WRAP, G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-		gSPTextureRectangle(gbi_ptr++, (text_x*4), (text_y*4), (text_x+8)*4, (text_y+8)*4, 0, (fps/10)*256, 0, 1024, 1024);
+		if(render_mode != RENDER_MODE_IMAGE) {
+			gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
+			gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+			render_mode = RENDER_MODE_IMAGE;
+		}
+		gDPSetTextureLUT(render_dl_ptr++, G_TT_NONE);
+		gDPLoadTextureTile_4b(render_dl_ptr++, fps_digits, G_IM_FMT_IA, 80, 8, 0, 0, 79, 7, 0, G_TX_WRAP, G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+		gSPTextureRectangle(render_dl_ptr++, (text_x*4), (text_y*4), (text_x+8)*4, (text_y+8)*4, 0, (fps/10)*256, 0, 1024, 1024);
 		text_x += 8;
-		gSPTextureRectangle(gbi_ptr++, (text_x*4), (text_y*4), (text_x+8)*4, (text_y+8)*4, 0, (fps%10)*256, 0, 1024, 1024);
+		gSPTextureRectangle(render_dl_ptr++, (text_x*4), (text_y*4), (text_x+8)*4, (text_y+8)*4, 0, (fps%10)*256, 0, 1024, 1024);
 	}
 }
 #endif
@@ -235,14 +231,20 @@ void RenderEndFrame()
 	#ifdef ENABLE_FPS_COUNTER
 	DrawFPS();
 	#endif
-	gDPFullSync(gbi_ptr++);
-    gSPEndDisplayList(gbi_ptr++);
-    nuGfxTaskStart(gbi_list[gbi_list_idx], (s32)(gbi_ptr - gbi_list[gbi_list_idx]) * sizeof(Gfx), NU_GFX_UCODE_S2DEX, NU_SC_SWAPBUFFER);
+	gDPFullSync(render_dl_ptr++);
+    gSPEndDisplayList(render_dl_ptr++);
+    nuGfxTaskStart(gbi_list[gbi_list_idx], (s32)(render_dl_ptr - gbi_list[gbi_list_idx]) * sizeof(Gfx), NU_GFX_UCODE_S2DEX, NU_SC_SWAPBUFFER);
 	gbi_list_idx++;
 	gbi_list_idx %= GBI_LIST_COUNT;
 }
 
-N64Rect *RenderGetCurrClipRect()
+void RenderPutRect(int x, int y, int w, int h, u8 r, u8 g, u8 b, u8 a)
 {
-	return &curr_clip;
+	if(render_mode != RENDER_MODE_RECT) {
+		gDPSetCombineMode(render_dl_ptr++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+		gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+		render_mode = RENDER_MODE_RECT;
+	}
+	gDPSetPrimColor(render_dl_ptr++, 0, 0, r, g, b, a);
+	gDPScisFillRectangle(render_dl_ptr++, x, y, x+w, y+h);
 }

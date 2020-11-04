@@ -428,12 +428,25 @@ void SpriteUpdateAnim(SpriteInfo *sprite)
 void SpriteDraw(SpriteInfo *sprite)
 {
 	if(sprite->curr_image) {
-		gDPSetCombineMode(gbi_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
-		gDPSetRenderMode(gbi_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-		gSPObjMatrix(gbi_ptr++, &sprite->matrix);
-		gSPDisplayList(gbi_ptr++, sprite->curr_image->s2d_gbi);
+		if(sprite->attr & SPRITE_ATTR_ENABLE_TINT) {
+			if(render_mode != RENDER_MODE_IMAGE_TINT) {
+				gDPSetCombineMode(render_dl_ptr++, G_CC_MODULATERGBA_PRIM, G_CC_MODULATERGBA_PRIM);
+				gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+				render_mode = RENDER_MODE_IMAGE_TINT;
+			}
+			gDPSetPrimColor(render_dl_ptr++, 0, 0, sprite->tint_r, sprite->tint_g, sprite->tint_b, sprite->tint_a);
+		} else {
+			if(render_mode != RENDER_MODE_IMAGE) {
+				gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
+				gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+				render_mode = RENDER_MODE_IMAGE;
+			}
+		}
+		
+		gSPObjMatrix(render_dl_ptr++, &sprite->matrix);
+		gSPDisplayList(render_dl_ptr++, sprite->curr_image->s2d_gbi);
 		if(sprite->curr_anim) {
-			
+			SpriteUpdateAnim(sprite);
 		}
 	}
 }

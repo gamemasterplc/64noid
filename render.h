@@ -17,22 +17,17 @@
 
 #define RENDER_MODE_IMAGE 0
 #define RENDER_MODE_IMAGE_TINT 1
-#define RENDER_MODE_BITMAP 2
-
-typedef struct n64_rect {
-	int left;
-	int top;
-	int right;
-	int bottom;
-} N64Rect;
+#define RENDER_MODE_RECT 2
 
 void RenderSetSize(int width, int height);
 void RenderClear(u8 r, u8 g, u8 b);
-void RenderSetClipRect(N64Rect *clip);
-void RenderResetClipRect();
+void RenderSetScissor(int x, int y, int w, int h);
+void RenderResetScissor();
 void RenderStartFrame();
 void RenderEndFrame();
+void RenderPutRect(int x, int y, int w, int h, u8 r, u8 g, u8 b, u8 a);
 
-extern Gfx *gbi_ptr;
+extern Gfx *render_dl_ptr;
+extern int render_mode;
 
 #endif

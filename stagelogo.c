@@ -14,6 +14,7 @@ void StageLogoInit()
 	image_idx = 0;
 	n64brew = SpriteCreate(SpriteLoadFile("n64brew.spr"));
 	SpriteSetPos(n64brew, 212, 120);
+	SpriteSetImage(n64brew, "world");
 }
 
 void StageLogoUpdate()
@@ -24,19 +25,6 @@ void StageLogoUpdate()
 	if(cont_data[0].button & L_TRIG) {
 		angle -= 256;
 	}
-	if(cont_data[0].trigger & A_BUTTON) {
-		image_idx++;
-		if(image_idx >= 3) {
-			image_idx = 0;
-		}
-	}
-	if(cont_data[0].trigger & B_BUTTON) {
-		image_idx--;
-		if(image_idx < 0) {
-			image_idx = 2;
-		}
-	}
-	SpriteSetImageIndex(n64brew, image_idx);
 	SpriteSetAngle(n64brew, angle);
 }
 
@@ -44,6 +32,7 @@ void StageLogoDraw()
 {
     RenderStartFrame();
 	RenderClear(0, 0, 255);
+	RenderPutRect(24, 16, (angle*376)/65536, 4, 255, 0, 0, 255);
 	SpriteDraw(n64brew);
 	RenderEndFrame();
 }
