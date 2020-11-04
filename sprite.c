@@ -185,7 +185,7 @@ static void MakeS2DDispList(SpriteImage *image)
 	u32 disp_size = GetS2DDispListSize(image);
 	Gfx *gbi_base = malloc(disp_size);
 	Gfx *gbi = gbi_base;
-	u16 slice_h = GetSliceHeight(image);
+	u16 slice_h = slice_pixel_cnt[image->format]/image->w;
 	u16 slice_cnt = image->h/slice_h;
 	u16 remainder_h = image->h%slice_h;
 	u16 y = 0;
