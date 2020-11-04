@@ -1,10 +1,17 @@
 #include <PR/ultratypes.h>
 #include "render.h"
 #include "controller.h"
+#include "bool.h"
 
 #define MAP_WIDTH 13
 #define MAP_HEIGHT 29
-#define MAP_X_OFS 56
+#define MAP_X_OFS 16
+#define MAP_BLOCK_W 16
+#define MAP_BLOCK_H 8
+#define BALL_W 8
+#define BALL_H 8
+#define PADDLE_W 32
+#define PADDLE_H 8
 
 static char map_data[MAP_WIDTH*MAP_HEIGHT] = {
 	"............."
@@ -50,14 +57,90 @@ u8 block_cols[][3] = {
 	{ 190, 195, 199 },
 };
 
+static float ball_x, ball_y;
+static float paddle_x, paddle_y;
+static float ball_vel_x, ball_vel_y;
+
+static void ResetBall()
+{
+	ball_x = MAP_WIDTH*MAP_BLOCK_W/2;
+	ball_y = (MAP_HEIGHT*MAP_BLOCK_H)-32;
+	ball_vel_x = 1.0f;
+	ball_vel_y = -1.0f;
+}
+
 void StageGameInit()
 {
 	RenderSetSize(320, 240);
+	ResetBall();
+	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
+	paddle_y = (MAP_HEIGHT*MAP_BLOCK_H)-8;
+}
+ 
+static bool TestMapCollision(int x, int y)
+{
+	int map_x = x/MAP_BLOCK_W;
+	int map_y = y/MAP_BLOCK_H;
+	if(map_x >= 0 && map_x < MAP_WIDTH && map_y >= 0 && map_y < MAP_HEIGHT) {
+		if(map_data[(map_y*MAP_WIDTH)+map_x] != '.') {
+			return true;
+		}
+	}
+	return false;
+}
+
+static void ClearMap(int x, int y)
+{
+	int map_x = x/MAP_BLOCK_W;
+	int map_y = y/MAP_BLOCK_H;
+	if(map_x >= 0 && map_x < MAP_WIDTH && map_y >= 0 && map_y < MAP_HEIGHT) {
+		map_data[(map_y*MAP_WIDTH)+map_x] = '.';
+	}
+}
+
+static void UpdateBall()
+{
+	ball_x += ball_vel_x;
+	ball_y += ball_vel_y;
+	if(ball_x >= MAP_WIDTH*MAP_BLOCK_W-(BALL_W/2)) {
+		ball_vel_x = -ball_vel_x;
+	}
+	if(ball_x < (BALL_W/2)) {
+		ball_vel_x = -ball_vel_x;
+	}
+	if(ball_y < (BALL_H/2)) {
+		ball_vel_y = -ball_vel_y;
+	}
+	if(ball_y >= paddle_y && ball_x >= (paddle_x-(PADDLE_W/2)) && ball_x < (paddle_x+(PADDLE_W/2))) {
+		ball_vel_y = -ball_vel_y;
+	}
+	if(ball_y >= MAP_HEIGHT*MAP_BLOCK_H) {
+		ResetBall();
+	}
+	if(TestMapCollision(ball_x-BALL_W, ball_y-BALL_H)) {
+		ClearMap(ball_x-BALL_W, ball_y-BALL_H);
+	}
+	if(TestMapCollision(ball_x+BALL_W, ball_y+BALL_H)) {
+		ClearMap(ball_x+BALL_W, ball_y+BALL_H);
+	}
+	if(TestMapCollision(ball_x+BALL_W, ball_y-BALL_H)) {
+		ClearMap(ball_x+BALL_W, ball_y-BALL_H);
+	}
+	if(TestMapCollision(ball_x-BALL_W, ball_y+BALL_H)) {
+		ClearMap(ball_x-BALL_W, ball_y+BALL_H);
+	}
 }
 
 void StageGameUpdate()
 {
-	
+	paddle_x += (cont_data[0].stick_x/10);
+	if(paddle_x >= MAP_WIDTH*MAP_BLOCK_W-(PADDLE_W/2)) {
+		paddle_x = MAP_WIDTH*MAP_BLOCK_W-(PADDLE_W/2);
+	}
+	if(paddle_x < (PADDLE_W/2)) {
+		paddle_x = (PADDLE_W/2);
+	}
+	UpdateBall();
 }
 
 static void DrawMap()
@@ -67,11 +150,21 @@ static void DrawMap()
 		for(j=0; j<MAP_WIDTH; j++) {
 			char value = map_data[(i*MAP_WIDTH)+j];
 			if(value != '.') {
-				RenderPutRect((j*16)+MAP_X_OFS, i*8, 16, 8,  block_cols[value-'a'][0], block_cols[value-'a'][1],
+				RenderPutRect((j*MAP_BLOCK_W)+MAP_X_OFS, (i*MAP_BLOCK_H), MAP_BLOCK_W, MAP_BLOCK_H, block_cols[value-'a'][0], block_cols[value-'a'][1],
 					block_cols[value-'a'][2], 255);
 			}
 		}
 	}
+}
+
+static void DrawBall()
+{
+	RenderPutRect(ball_x+MAP_X_OFS-(BALL_W/2), ball_y-(BALL_H/2), BALL_W, BALL_H, 255, 255, 255, 255);
+}
+
+static void DrawPaddle()
+{
+	RenderPutRect(paddle_x+MAP_X_OFS-(PADDLE_W/2), paddle_y, PADDLE_W, PADDLE_H, 255, 255, 255, 255);
 }
 
 void StageGameDraw()
@@ -79,6 +172,8 @@ void StageGameDraw()
     RenderStartFrame();
 	RenderClear(0, 0, 0);
 	DrawMap();
+	DrawBall();
+	DrawPaddle();
 	RenderEndFrame();
 }
 

@@ -285,9 +285,8 @@ static void UpdateSpriteMatrix(SpriteInfo *sprite)
 	osWritebackDCache(&sprite->matrix, sizeof(uObjMtx));
 }
 
-SpriteInfo *SpriteCreate(SpriteData *data)
+void SpriteInit(SpriteInfo *sprite, SpriteData *data)
 {
-	SpriteInfo *sprite = malloc(sizeof(SpriteInfo));
 	sprite->data = data;
 	sprite->curr_anim = NULL;
 	sprite->curr_image = NULL;
@@ -300,6 +299,12 @@ SpriteInfo *SpriteCreate(SpriteData *data)
 	sprite->anim_speed = 1.0f;
 	sprite->anim_frame = 0;
 	sprite->tint_r = sprite->tint_g = sprite->tint_b = sprite->tint_a = 255;
+}
+
+SpriteInfo *SpriteCreate(SpriteData *data)
+{
+	SpriteInfo *sprite = malloc(sizeof(SpriteInfo));
+	SpriteInit(sprite, data);
 	return sprite;
 }
 
@@ -350,11 +355,11 @@ void SpriteSetAnimSpeed(SpriteInfo *sprite, float speed)
 	sprite->anim_speed = speed;
 }
 
-static SpriteAnim *FindAnimationHash(SpriteData *data, u32 name_hash)
+static SpriteAnim *FindAnimationHash(SpriteData *data, u32 id_hash)
 {
 	int i;
 	for(i=0; i<data->num_anims; i++) {
-		if(data->anims[i].name_hash == name_hash) {
+		if(data->anims[i].id_hash == id_hash) {
 			return &data->anims[i];
 		}
 	}
@@ -378,7 +383,7 @@ void SpriteSetAnim(SpriteInfo *sprite, const char *id)
 		sprite->curr_anim = FindAnimationHash(sprite->data, HashGet(id));
 		if(sprite->curr_anim) {
 			sprite->anim_frame = 0;
-			sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image];
+			sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image_idx];
 			sprite->anim_time = 0;
 		} else {
 			sprite->curr_image = NULL;
@@ -391,7 +396,7 @@ void SpriteSetAnimIndex(SpriteInfo *sprite, int index)
 	sprite->curr_anim = &sprite->data->anims[index];
 	if(sprite->curr_anim) {
 		sprite->anim_frame = 0;
-		sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image];
+		sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image_idx];
 		sprite->anim_time = 0;
 	} else {
 		sprite->curr_image = NULL;
@@ -420,33 +425,77 @@ void SpriteSetTint(SpriteInfo *sprite, u8 r, u8 g, u8 b, u8 a)
 	sprite->tint_a = a;
 }
 
-void SpriteUpdateAnim(SpriteInfo *sprite)
+static void UpdateSpriteAnim(SpriteInfo *sprite)
 {
-	
+	sprite->anim_time += sprite->anim_speed;
+	if(sprite->anim_time >= sprite->curr_anim->frames[sprite->anim_frame].delay) {
+		if(sprite->attr & SPRITE_ATTR_BACKWARDS_ANIM) {
+			sprite->anim_frame--;
+			if(sprite->anim_frame < 0) {
+				sprite->anim_frame = sprite->curr_anim->num_frames-1;
+			}
+			sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image_idx];
+		} else {
+			sprite->anim_frame++;
+			if(sprite->anim_frame >= sprite->curr_anim->num_frames) {
+				sprite->anim_frame = 0;
+			}
+			sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image_idx];
+		}
+	}
 }
 
 void SpriteDraw(SpriteInfo *sprite)
 {
 	if(sprite->curr_image) {
-		if(sprite->attr & SPRITE_ATTR_ENABLE_TINT) {
-			if(render_mode != RENDER_MODE_IMAGE_TINT) {
-				gDPSetCombineMode(render_dl_ptr++, G_CC_MODULATERGBA_PRIM, G_CC_MODULATERGBA_PRIM);
-				gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-				render_mode = RENDER_MODE_IMAGE_TINT;
+		if(sprite->attr & SPRITE_ATTR_INVISIBLE) {
+			if(sprite->curr_anim) {
+				UpdateSpriteAnim(sprite);
 			}
-			gDPSetPrimColor(render_dl_ptr++, 0, 0, sprite->tint_r, sprite->tint_g, sprite->tint_b, sprite->tint_a);
 		} else {
-			if(render_mode != RENDER_MODE_IMAGE) {
-				gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
-				gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-				render_mode = RENDER_MODE_IMAGE;
+			if(sprite->attr & SPRITE_ATTR_ENABLE_TINT) {
+				if(render_mode != RENDER_MODE_IMAGE_TINT) {
+					gDPSetCombineMode(render_dl_ptr++, G_CC_MODULATERGBA_PRIM, G_CC_MODULATERGBA_PRIM);
+					gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+					render_mode = RENDER_MODE_IMAGE_TINT;
+				}
+				gDPSetPrimColor(render_dl_ptr++, 0, 0, sprite->tint_r, sprite->tint_g, sprite->tint_b, sprite->tint_a);
+			} else {
+				if(render_mode != RENDER_MODE_IMAGE) {
+					gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
+					gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+					render_mode = RENDER_MODE_IMAGE;
+				}
 			}
-		}
-		
-		gSPObjMatrix(render_dl_ptr++, &sprite->matrix);
-		gSPDisplayList(render_dl_ptr++, sprite->curr_image->s2d_gbi);
-		if(sprite->curr_anim) {
-			SpriteUpdateAnim(sprite);
+			gSPObjMatrix(render_dl_ptr++, &sprite->matrix);
+			gSPDisplayList(render_dl_ptr++, sprite->curr_image->s2d_gbi);
+			if(sprite->curr_anim) {
+				UpdateSpriteAnim(sprite);
+			}
 		}
 	}
+}
+
+int SpriteGetImageIndex(SpriteData *data, const char *id)
+{
+	int i;
+	u32 hash = HashGet(id);
+	for(i=0; i<data->num_images; i++) {
+		if(data->images[i].id_hash == hash) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int SpriteGetAnimIndex(SpriteData *data, const char *id)
+{
+	int i;
+	u32 hash = HashGet(id);
+	for(i=0; i<data->num_images; i++) {
+		if(data->anims[i].id_hash == hash) {
+			return i;
+		}
+	}
+	return -1;
 }

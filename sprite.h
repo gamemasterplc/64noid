@@ -31,12 +31,12 @@
 #define SPRITE_ATTR_ENABLE_TINT 0x4
 
 typedef struct sprite_anim_frame {
-    u16 image;
+    u16 image_idx;
     u16 delay;
 } SpriteAnimFrame;
 
 typedef struct sprite_anim {
-    u32 name_hash;
+    u32 id_hash;
     u32 num_frames;
     SpriteAnimFrame *frames;
 } SpriteAnim;
@@ -77,7 +77,7 @@ typedef struct sprite_info {
 	float anim_time;
 	float anim_speed;
 	u16 angle;
-	u16 anim_frame;
+	s16 anim_frame;
 	u8 tint_r;
 	u8 tint_g;
 	u8 tint_b;
@@ -86,6 +86,8 @@ typedef struct sprite_info {
 
 SpriteData *SpriteLoadMemory(void *ptr);
 SpriteData *SpriteLoadFile(const char *filename);
+void SpriteFreeData(SpriteData *data);
+void SpriteInit(SpriteInfo *sprite, SpriteData *data);
 SpriteInfo *SpriteCreate(SpriteData *data);
 void SpriteDestroy(SpriteInfo *sprite);
 void SpriteSetFlip(SpriteInfo *sprite, unsigned int mask);
@@ -103,5 +105,7 @@ void SpriteSetImage(SpriteInfo *sprite, const char *id);
 void SpriteSetImageIndex(SpriteInfo *sprite, int index);
 void SpriteSetTint(SpriteInfo *sprite, u8 r, u8 g, u8 b, u8 a);
 void SpriteDraw(SpriteInfo *sprite);
+int SpriteGetImageIndex(SpriteData *data, const char *id);
+int SpriteGetAnimIndex(SpriteData *data, const char *id);
 
 #endif
