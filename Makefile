@@ -1,6 +1,6 @@
 N64KITDIR	= c:/nintendo/n64kit
 
-TARGET = breakout
+TARGET = arkanoid
 CODEFILES = main.c controller render.c sprite.c \
 hash.c file.c stagelogo.c \
 
