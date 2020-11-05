@@ -64,9 +64,9 @@ static float ball_vel_x, ball_vel_y;
 static void ResetField()
 {
 	ball_x = MAP_WIDTH*MAP_BLOCK_W/2;
-	ball_y = (MAP_HEIGHT*MAP_BLOCK_H)-32;
-	ball_vel_x = 1.0f;
-	ball_vel_y = -1.0f;
+	ball_y = (MAP_HEIGHT*MAP_BLOCK_H)-64;
+	ball_vel_x = 0.5f;
+	ball_vel_y = 1.0f;
 	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
 }
 
@@ -83,23 +83,16 @@ static bool TestMapCollision(int x, int y)
 	int map_y = y/MAP_BLOCK_H;
 	if(map_x >= 0 && map_x < MAP_WIDTH && map_y >= 0 && map_y < MAP_HEIGHT) {
 		if(map_data[(map_y*MAP_WIDTH)+map_x] != '.') {
+			map_data[(map_y*MAP_WIDTH)+map_x] = '.';
 			return true;
 		}
 	}
 	return false;
 }
 
-static void ClearMap(int x, int y)
-{
-	int map_x = x/MAP_BLOCK_W;
-	int map_y = y/MAP_BLOCK_H;
-	if(map_x >= 0 && map_x < MAP_WIDTH && map_y >= 0 && map_y < MAP_HEIGHT) {
-		map_data[(map_y*MAP_WIDTH)+map_x] = '.';
-	}
-}
-
 static void UpdateBall()
 {
+	int left, top, right, bottom;
 	ball_x += ball_vel_x;
 	ball_y += ball_vel_y;
 	if(ball_x >= MAP_WIDTH*MAP_BLOCK_W-(BALL_W/2)) {
@@ -111,23 +104,19 @@ static void UpdateBall()
 	if(ball_y < (BALL_H/2)) {
 		ball_vel_y = -ball_vel_y;
 	}
-	if(ball_y >= paddle_y && ball_x >= (paddle_x-(PADDLE_W/2)) && ball_x < (paddle_x+(PADDLE_W/2))) {
+	if(ball_y >= paddle_y && ball_x >= (paddle_x-(PADDLE_W/2)) && ball_x < (paddle_x+(PADDLE_W/2)) && ball_vel_y > 0) {
+		ball_vel_x = ((ball_x-paddle_x)/(PADDLE_W/2))*1.5f;
 		ball_vel_y = -ball_vel_y;
 	}
 	if(ball_y >= MAP_HEIGHT*MAP_BLOCK_H) {
 		ResetField();
 	}
-	if(TestMapCollision(ball_x-BALL_W, ball_y-BALL_H)) {
-		ClearMap(ball_x-BALL_W, ball_y-BALL_H);
-	}
-	if(TestMapCollision(ball_x+BALL_W, ball_y+BALL_H)) {
-		ClearMap(ball_x+BALL_W, ball_y+BALL_H);
-	}
-	if(TestMapCollision(ball_x+BALL_W, ball_y-BALL_H)) {
-		ClearMap(ball_x+BALL_W, ball_y-BALL_H);
-	}
-	if(TestMapCollision(ball_x-BALL_W, ball_y+BALL_H)) {
-		ClearMap(ball_x-BALL_W, ball_y+BALL_H);
+	left = ball_x-(BALL_W/2);
+	right = ball_x+(BALL_W/2);
+	top = ball_y-(BALL_H/2);
+	bottom = ball_y+(BALL_H/2);
+	if(TestMapCollision(left, top) || TestMapCollision(right, top) || TestMapCollision(left, bottom) || TestMapCollision(right, bottom)) {
+		ball_vel_y = -ball_vel_y;
 	}
 }
 
