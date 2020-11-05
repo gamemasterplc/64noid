@@ -5,7 +5,7 @@
 
 #define MAP_WIDTH 13
 #define MAP_HEIGHT 29
-#define MAP_X_OFS 16
+#define MAP_X_OFS 56
 #define MAP_BLOCK_W 16
 #define MAP_BLOCK_H 8
 #define BALL_W 8
@@ -61,19 +61,19 @@ static float ball_x, ball_y;
 static float paddle_x, paddle_y;
 static float ball_vel_x, ball_vel_y;
 
-static void ResetBall()
+static void ResetField()
 {
 	ball_x = MAP_WIDTH*MAP_BLOCK_W/2;
 	ball_y = (MAP_HEIGHT*MAP_BLOCK_H)-32;
 	ball_vel_x = 1.0f;
 	ball_vel_y = -1.0f;
+	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
 }
 
 void StageGameInit()
 {
 	RenderSetSize(320, 240);
-	ResetBall();
-	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
+	ResetField();
 	paddle_y = (MAP_HEIGHT*MAP_BLOCK_H)-8;
 }
  
@@ -115,7 +115,7 @@ static void UpdateBall()
 		ball_vel_y = -ball_vel_y;
 	}
 	if(ball_y >= MAP_HEIGHT*MAP_BLOCK_H) {
-		ResetBall();
+		ResetField();
 	}
 	if(TestMapCollision(ball_x-BALL_W, ball_y-BALL_H)) {
 		ClearMap(ball_x-BALL_W, ball_y-BALL_H);
