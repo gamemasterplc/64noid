@@ -1,48 +1,31 @@
 #include <PR/ultratypes.h>
 #include "render.h"
-#include "controller.h"
+#include "pad.h"
 #include "bool.h"
 
-#define MAP_WIDTH 13
-#define MAP_HEIGHT 29
-#define MAP_X_OFS 56
-#define MAP_BLOCK_W 16
-#define MAP_BLOCK_H 8
+#define MAP_WIDTH 10
+#define MAP_HEIGHT 12
+#define MAP_X_OFS 16
+#define MAP_BLOCK_W 20
+#define MAP_BLOCK_H 10
 #define BALL_W 8
 #define BALL_H 8
 #define PADDLE_W 32
 #define PADDLE_H 8
 
 static char map_data[MAP_WIDTH*MAP_HEIGHT] = {
-	"............."
-	"h............"
-	"hg..........."
-	"hgf.........."
-	"hgfe........."
-	"hgfed........"
-	"hgfedc......."
-	"hgfedcb......"
-	"hgfedcba....."
-	"hgfedcbah...."
-	"hgfedcbahg..."
-	"hgfedcbahgf.."
-	"hgfedcbahgfe."
-	"iiiiiiiiiiiii"
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
-	"............."
+	".........."
+	"h........."
+	"hg........"
+	"hgf......."
+	"hgfe......"
+	"hgfed....."
+	"hgfedc...."
+	"hgfedcb..."
+	"hgfedcba.."
+	"hgfedcbah."
+	"hgfedcbahg"
+	"iiiiiiiiii"
 };
 
 u8 block_cols[][3] = {
@@ -64,17 +47,17 @@ static float ball_vel_x, ball_vel_y;
 static void ResetField()
 {
 	ball_x = MAP_WIDTH*MAP_BLOCK_W/2;
-	ball_y = (MAP_HEIGHT*MAP_BLOCK_H)-64;
+	ball_y = 160;
 	ball_vel_x = 0.5f;
 	ball_vel_y = 1.0f;
-	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
 }
 
 void StageGameInit()
 {
 	RenderSetSize(320, 240);
 	ResetField();
-	paddle_y = (MAP_HEIGHT*MAP_BLOCK_H)-8;
+	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
+	paddle_y = 210;
 }
  
 static bool TestMapCollision(int x, int y)
@@ -108,21 +91,24 @@ static void UpdateBall()
 		ball_vel_x = ((ball_x-paddle_x)/(PADDLE_W/2))*1.5f;
 		ball_vel_y = -ball_vel_y;
 	}
-	if(ball_y >= MAP_HEIGHT*MAP_BLOCK_H) {
+	if(ball_y >= 240) {
 		ResetField();
 	}
 	left = ball_x-(BALL_W/2);
 	right = ball_x+(BALL_W/2);
 	top = ball_y-(BALL_H/2);
 	bottom = ball_y+(BALL_H/2);
-	if(TestMapCollision(left, top) || TestMapCollision(right, top) || TestMapCollision(left, bottom) || TestMapCollision(right, bottom)) {
+	if((ball_vel_y < 0 && TestMapCollision(left, top)) ||
+		(ball_vel_y < 0 && TestMapCollision(right, top)) ||
+		(ball_vel_y > 0 && TestMapCollision(left, bottom)) ||
+		(ball_vel_y > 0 && TestMapCollision(right, bottom))) {
 		ball_vel_y = -ball_vel_y;
 	}
 }
 
 void StageGameUpdate()
 {
-	paddle_x += (cont_data[0].stick_x/10);
+	paddle_x += (pad_data[0].stick_x/10);
 	if(paddle_x >= MAP_WIDTH*MAP_BLOCK_W-(PADDLE_W/2)) {
 		paddle_x = MAP_WIDTH*MAP_BLOCK_W-(PADDLE_W/2);
 	}

@@ -1,10 +1,10 @@
 #include <nusys.h>
 #include <malloc.h>
 #include "main.h"
-#include "controller.h"
+#include "pad.h"
 #include "file.h"
 #include "render.h"
-#include "stagegame.h"
+#include "game.h"
 
 extern u8 _codeSegmentEnd[];
 
@@ -18,7 +18,7 @@ static StageID curr_stage = STAGE_NONE;
 static void GfxCallback(u32 pendingTaskCount)
 {
     if (pendingTaskCount == 0) {
-		ControllerRead();
+		PadRead();
 		stage_table[curr_stage].update_func();
 		stage_table[curr_stage].draw_func();
 	}
@@ -27,7 +27,7 @@ static void GfxCallback(u32 pendingTaskCount)
 void mainproc(void *dummy)
 {
     nuGfxInit();
-	ControllerInit();
+	PadInit();
 	InitHeap(_codeSegmentEnd, (u8 *)OS_PHYSICAL_TO_K0(osMemSize-MAX_FRAMEBUF_SIZE)-_codeSegmentEnd);
     FilePackInit();
 	next_stage = STAGE_GAME;
