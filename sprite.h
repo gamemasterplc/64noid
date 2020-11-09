@@ -89,7 +89,7 @@ SpriteData *SpriteLoadFile(const char *filename);
 void SpriteFreeData(SpriteData *data);
 void SpriteInit(SpriteInfo *sprite, SpriteData *data);
 SpriteInfo *SpriteCreate(SpriteData *data);
-void SpriteDestroy(SpriteInfo *sprite);
+void SpriteDelete(SpriteInfo *sprite);
 void SpriteSetFlip(SpriteInfo *sprite, unsigned int mask);
 void SpriteResetFlip(SpriteInfo *sprite, unsigned int mask);
 void SpriteSetAttr(SpriteInfo *sprite, unsigned int mask);

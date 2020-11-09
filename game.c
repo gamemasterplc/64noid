@@ -39,6 +39,7 @@ static Ball balls[MAX_BALLS];
 static Paddle paddle;
 static int num_balls;
 static SpriteData *game_sprites;
+static SpriteInfo *border_sprite;
 
 static void InitBalls()
 {
@@ -96,7 +97,9 @@ void StageGameInit()
 	InitPaddle();
 	CreateBall();
 	MapLoad(0);
-	
+	border_sprite = SpriteCreate(game_sprites);
+	SpriteSetImage(border_sprite, "border");
+	SpriteSetPos(border_sprite, 8, 8);
 }
 
 static bool TestPaddleCollision(Ball *ball)
@@ -115,19 +118,19 @@ static bool TestBrickCollision(Ball *ball, int side)
 	MapBrick *brick;
 	switch(side) {
 		case HIT_SIDE_TOP:
-			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
+			brick = MapGetBrick(ball->x/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
 			break;
 			
 		case HIT_SIDE_BOTTOM:
-			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, (ball->y+ball->radius)/MAP_BRICK_H);
+			brick = MapGetBrick(ball->x/MAP_BRICK_W, (ball->y+ball->radius)/MAP_BRICK_H);
 			break;
 			
 		case HIT_SIDE_LEFT:
-			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
+			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, ball->y/MAP_BRICK_H);
 			break;
 			
 		case HIT_SIDE_RIGHT:
-			brick = MapGetBrick((ball->x+ball->radius)/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
+			brick = MapGetBrick((ball->x+ball->radius)/MAP_BRICK_W, ball->y/MAP_BRICK_H);
 			break;
 			
 		default:
@@ -175,9 +178,9 @@ static void UpdateBalls()
 					balls[i].vel_x = -balls[i].vel_x;
 					balls[i].x = (MAP_WIDTH*MAP_BRICK_W)-balls[i].radius;
 				}
-				if(balls[i].y < balls[i].radius) {
+				if(balls[i].y < 8+balls[i].radius) {
 					balls[i].vel_y = -balls[i].vel_y;
-					balls[i].y = balls[i].radius;
+					balls[i].y = 8+balls[i].radius;
 				}
 				if(balls[i].y > 240+balls[i].radius) {
 					balls[i].exists = false;
@@ -262,16 +265,18 @@ static void DrawPaddle()
 void StageGameDraw()
 {
     RenderStartFrame();
-	RenderClear(0, 127, 127);
+	RenderClear(0, 0, 0);
 	MapDraw();
 	DrawPaddle();
 	DrawBall();
+	SpriteDraw(border_sprite);
 	RenderEndFrame();
 }
 
 void StageGameDestroy()
 {
 	MapUnload();
+	SpriteDelete(border_sprite);
 	free(game_sprites);
 	game_sprites = NULL;
 }

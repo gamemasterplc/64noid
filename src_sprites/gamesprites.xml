@@ -8,5 +8,6 @@
 		<image filename="game/paddle_small.png" id="paddle_small"/>
 		<image filename="game/paddle.png" id="paddle"/>
 		<image filename="game/paddle_long.png" id="paddle_long"/>
+		<image filename="game/border.png" id="border" format="ia4" origin_x="0.0" origin_y="0.0"/>
 	</images>
 </sprite>

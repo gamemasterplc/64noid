@@ -16,7 +16,7 @@ static void PatchSpriteAnim(SpriteAnim *anim_base, u16 num_anims)
 }
 
 static u8 bpp_table[SPRITE_IMG_FORMAT_MAX] = { 4, 8, 4, 8, 16, 4, 8, 16, 32 };
-static int slice_pixel_cnt[SPRITE_IMG_FORMAT_MAX] = { 8192, 4096, 8192, 4096, 2048, 4096, 2048, 2048, 1024 };
+static int slice_pixel_cnt[SPRITE_IMG_FORMAT_MAX] = { 4096, 4096, 4096, 4096, 2048, 4096, 2048, 2048, 1024 };
 static u8 fmt_tile_bytes[SPRITE_IMG_FORMAT_MAX] = { 0, 1, 0, 1, 2, 0, 1, 2, 2 };
 
 static u8 image_fmt_tbl[SPRITE_IMG_FORMAT_MAX] = {
@@ -307,9 +307,8 @@ SpriteInfo *SpriteCreate(SpriteData *data)
 	return sprite;
 }
 
-void SpriteDestroy(SpriteInfo *sprite)
+void SpriteDelete(SpriteInfo *sprite)
 {
-	SpriteFreeData(sprite->data);
 	free(sprite);
 }
 
