@@ -5,5 +5,8 @@
 # ROM
 *.n64
 
+# Symbols
+*.map
+
 # File Pack
 file_pack.bin

@@ -463,17 +463,17 @@ void SpriteDraw(SpriteInfo *sprite)
 			}
 		} else {
 			if(sprite->attr & SPRITE_ATTR_ENABLE_TINT) {
-				if(render_mode != RENDER_MODE_IMAGE_TINT) {
+				if(render_mode != RENDER_MODE_SPRITE_TINT) {
 					gDPSetCombineMode(render_dl_ptr++, G_CC_MODULATERGBA_PRIM, G_CC_MODULATERGBA_PRIM);
 					gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-					render_mode = RENDER_MODE_IMAGE_TINT;
+					render_mode = RENDER_MODE_SPRITE_TINT;
 				}
 				gDPSetPrimColor(render_dl_ptr++, 0, 0, sprite->tint_r, sprite->tint_g, sprite->tint_b, sprite->tint_a);
 			} else {
-				if(render_mode != RENDER_MODE_IMAGE) {
+				if(render_mode != RENDER_MODE_SPRITE) {
 					gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 					gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-					render_mode = RENDER_MODE_IMAGE;
+					render_mode = RENDER_MODE_SPRITE;
 				}
 			}
 			gSPObjMatrix(render_dl_ptr++, &sprite->matrix);

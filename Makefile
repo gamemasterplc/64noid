@@ -1,7 +1,7 @@
 N64KITDIR	= c:/nintendo/n64kit
 
 TARGET = arkanoid
-CODEFILES = main.c pad.c render.c sprite.c \
+CODEFILES = main.c pad.c render.c text.c sprite.c \
 hash.c file.c game.c map.c mapdata.c 
 
 OTHERFILES = 

@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <math.h>
 #include "render.h"
+#include "text.h"
 #include "bool.h"
 
 #define ENABLE_FPS_COUNTER
@@ -194,10 +195,11 @@ void RenderStartFrame()
 	#else
 	gDPSetColorImage(render_dl_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
 	#endif
-	render_mode = RENDER_MODE_IMAGE;
+	render_mode = RENDER_MODE_SPRITE;
 	gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 	gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
 	RenderResetScissor();
+	TextSetColor(255, 255, 255, 255);
 }
 
 #ifdef ENABLE_FPS_COUNTER
@@ -216,10 +218,10 @@ static void DrawFPS()
 			fps = 99;
 		}
 		last_time = this_time;
-		if(render_mode != RENDER_MODE_IMAGE) {
+		if(render_mode != RENDER_MODE_SPRITE) {
 			gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 			gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
-			render_mode = RENDER_MODE_IMAGE;
+			render_mode = RENDER_MODE_SPRITE;
 		}
 		gDPSetTextureLUT(render_dl_ptr++, G_TT_NONE);
 		gDPLoadTextureTile_4b(render_dl_ptr++, fps_digits, G_IM_FMT_IA, 80, 8, 0, 0, 79, 7, 0, G_TX_WRAP, G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);

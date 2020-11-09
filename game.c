@@ -4,9 +4,11 @@
 #include "pad.h"
 #include "map.h"
 #include "sprite.h"
+#include "text.h"
 #include "bool.h"
 
 #define MAX_BALLS 3
+#define MAX_POWERUP_ITEMS 5
 #define BALL_VELOCITY 2.5
 #define PADDLE_VELOCITY 3.5
 
@@ -14,6 +16,15 @@
 #define HIT_SIDE_BOTTOM 1
 #define HIT_SIDE_LEFT 2
 #define HIT_SIDE_RIGHT 3
+
+#define POWERUP_LASER 0
+#define POWERUP_GROW_PADDLE 1
+#define POWERUP_SHRINK_PADDLE 2
+#define POWERUP_STICK 3
+#define POWERUP_SLOW_BALL 4
+#define POWERUP_TRIPLE_BALL 4
+#define POWERUP_EXTRA_LIFE 5
+#define POWERUP_BIG_BALL 6
 
 typedef struct paddle {
 	float x;
@@ -35,7 +46,16 @@ typedef struct ball {
 	SpriteInfo sprite;
 } Ball;
 
+typedef struct powerup_item {
+	bool exists;
+	int type;
+	float x;
+	float y;
+	SpriteInfo sprite;
+} PowerUpItem;
+
 static Ball balls[MAX_BALLS];
+static PowerUpItem powerup_item[MAX_POWERUP_ITEMS];
 static Paddle paddle;
 static int num_balls;
 static SpriteData *game_sprites;
@@ -57,7 +77,7 @@ static void InitPaddle()
 {
 	int i;
 	paddle.x = (MAP_WIDTH*MAP_BRICK_W/2);
-	paddle.y = (MAP_HEIGHT*MAP_BRICK_H)-16;
+	paddle.y = 200;
 	paddle.w = 40;
 	paddle.h = 8;
 	SpriteInit(&paddle.sprite, game_sprites);
@@ -144,13 +164,28 @@ static bool TestBrickCollision(Ball *ball, int side)
 	if(brick && brick->type != BRICK_EMPTY) {
 		switch(side) {
 			case HIT_SIDE_TOP:
-			case HIT_SIDE_BOTTOM:
-				ball->vel_y = -ball->vel_y;
+				if(ball->vel_y < 0) {
+					ball->vel_y = -ball->vel_y;
+				}
 				break;
 				
+			case HIT_SIDE_BOTTOM:
+				if(ball->vel_y > 0) {
+					ball->vel_y = -ball->vel_y;
+				}
+				break;
+				
+				
 			case HIT_SIDE_LEFT:
+				if(ball->vel_x < 0) {
+					ball->vel_x = -ball->vel_x;
+				}
+				break;
+				
 			case HIT_SIDE_RIGHT:
-				ball->vel_x = -ball->vel_x;
+				if(ball->vel_x > 0) {
+					ball->vel_x = -ball->vel_x;
+				}
 				break;
 				
 			default:
@@ -266,6 +301,13 @@ static void DrawPaddle()
 	SpriteDraw(&paddle.sprite);
 }
 
+static void DrawHUD()
+{
+	char text_buf[64];
+	sprintf(text_buf, "Bricks:%d", MapGetNumBricks());
+	TextDraw(228, 64, TEXT_ALIGNMENT_LEFT, text_buf);
+}
+
 void StageGameDraw()
 {
     RenderStartFrame();
@@ -275,6 +317,7 @@ void StageGameDraw()
 	MapDraw();
 	DrawPaddle();
 	DrawBall();
+	DrawHUD();
 	RenderEndFrame();
 }
 
