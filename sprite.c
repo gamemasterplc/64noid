@@ -16,7 +16,7 @@ static void PatchSpriteAnim(SpriteAnim *anim_base, u16 num_anims)
 }
 
 static u8 bpp_table[SPRITE_IMG_FORMAT_MAX] = { 4, 8, 4, 8, 16, 4, 8, 16, 32 };
-static int slice_pixel_cnt[SPRITE_IMG_FORMAT_MAX] = { 4096, 4096, 4096, 4096, 2048, 4096, 2048, 2048, 1024 };
+static int slice_word_count[SPRITE_IMG_FORMAT_MAX] = { 512, 512, 512, 512, 512, 256, 256, 512, 512 };
 static u8 fmt_tile_bytes[SPRITE_IMG_FORMAT_MAX] = { 0, 1, 0, 1, 2, 0, 1, 2, 2 };
 
 static u8 image_fmt_tbl[SPRITE_IMG_FORMAT_MAX] = {
@@ -70,9 +70,20 @@ static void MakeS2DSprite(SpriteImage *image, u16 spr_index, u16 y, u16 h)
 	s2d_sprite->imageFlags = 0;
 }
 
+static int GetSliceHeight(SpriteImage *image)
+{
+	int stride;
+	if(fmt_tile_bytes[image->format] != 0) {
+		stride = (((image->w)*fmt_tile_bytes[image->format])+7)>>3;
+	} else {
+		stride = (((image->w)>>1)+7)>>3;
+	}
+	return slice_word_count[image->format]/stride;
+}
+
 static void MakeS2DSprites(SpriteImage *image)
 {
-	u16 slice_h = slice_pixel_cnt[image->format]/image->w;
+	u16 slice_h = GetSliceHeight(image);
 	u16 slice_cnt = image->h/slice_h;
 	u16 total_slice_cnt = slice_cnt;
 	u16 remainder_h = image->h%slice_h;
@@ -94,7 +105,7 @@ static void MakeS2DSprites(SpriteImage *image)
 
 static u32 GetS2DDispListSize(SpriteImage *image)
 {
-	u16 slice_h = slice_pixel_cnt[image->format]/image->w;
+	u16 slice_h = GetSliceHeight(image);
 	u16 slice_cnt = image->h/slice_h;
 	u16 total_slice_cnt = slice_cnt;
 	u16 remainder_h = image->h%slice_h;
@@ -184,7 +195,7 @@ static void MakeS2DDispList(SpriteImage *image)
 	u32 disp_size = GetS2DDispListSize(image);
 	Gfx *gbi_base = malloc(disp_size);
 	Gfx *gbi = gbi_base;
-	u16 slice_h = slice_pixel_cnt[image->format]/image->w;
+	u16 slice_h = GetSliceHeight(image);
 	u16 slice_cnt = image->h/slice_h;
 	u16 remainder_h = image->h%slice_h;
 	u16 y = 0;

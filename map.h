@@ -6,7 +6,7 @@
 #define MAP_WIDTH 10
 #define MAP_HEIGHT 22
 #define MAP_X_OFS 16
-#define MAP_Y_OFS 8
+#define MAP_Y_OFS 16
 #define MAP_BRICK_W 20
 #define MAP_BRICK_H 10
 #define BRICK_EMPTY '.'

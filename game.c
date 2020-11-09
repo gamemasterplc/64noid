@@ -40,6 +40,7 @@ static Paddle paddle;
 static int num_balls;
 static SpriteData *game_sprites;
 static SpriteInfo *border_sprite;
+static SpriteInfo *field_bg_sprite;
 
 static void InitBalls()
 {
@@ -99,7 +100,10 @@ void StageGameInit()
 	MapLoad(0);
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
-	SpriteSetPos(border_sprite, 8, 8);
+	SpriteSetPos(border_sprite, MAP_X_OFS-8, MAP_Y_OFS-8);
+	field_bg_sprite = SpriteCreate(game_sprites);
+	SpriteSetImage(field_bg_sprite, "field_bg");
+	SpriteSetPos(field_bg_sprite, MAP_X_OFS, MAP_Y_OFS);
 }
 
 static bool TestPaddleCollision(Ball *ball)
@@ -178,9 +182,9 @@ static void UpdateBalls()
 					balls[i].vel_x = -balls[i].vel_x;
 					balls[i].x = (MAP_WIDTH*MAP_BRICK_W)-balls[i].radius;
 				}
-				if(balls[i].y < 8+balls[i].radius) {
+				if(balls[i].y < balls[i].radius) {
 					balls[i].vel_y = -balls[i].vel_y;
-					balls[i].y = 8+balls[i].radius;
+					balls[i].y = balls[i].radius;
 				}
 				if(balls[i].y > 240+balls[i].radius) {
 					balls[i].exists = false;
@@ -266,10 +270,11 @@ void StageGameDraw()
 {
     RenderStartFrame();
 	RenderClear(0, 0, 0);
+	SpriteDraw(border_sprite);
+	SpriteDraw(field_bg_sprite);
 	MapDraw();
 	DrawPaddle();
 	DrawBall();
-	SpriteDraw(border_sprite);
 	RenderEndFrame();
 }
 
@@ -277,6 +282,7 @@ void StageGameDestroy()
 {
 	MapUnload();
 	SpriteDelete(border_sprite);
+	SpriteDelete(field_bg_sprite);
 	free(game_sprites);
 	game_sprites = NULL;
 }
