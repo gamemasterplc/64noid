@@ -1,5 +1,4 @@
 #include <ultra64.h>
-#include <math.h>
 #include <malloc.h>
 #include "sprite.h"
 #include "file.h"

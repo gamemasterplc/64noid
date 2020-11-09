@@ -1,158 +1,277 @@
 #include <PR/ultratypes.h>
+#include <PR/gu.h>
 #include "render.h"
 #include "pad.h"
+#include "map.h"
+#include "sprite.h"
 #include "bool.h"
 
-#define MAP_WIDTH 10
-#define MAP_HEIGHT 12
-#define MAP_X_OFS 16
-#define MAP_BLOCK_W 20
-#define MAP_BLOCK_H 10
-#define BALL_W 8
-#define BALL_H 8
-#define PADDLE_W 32
-#define PADDLE_H 8
+#define MAX_BALLS 3
+#define BALL_VELOCITY 2.5
+#define PADDLE_VELOCITY 3.5
 
-static char map_data[MAP_WIDTH*MAP_HEIGHT] = {
-	".........."
-	"h........."
-	"hg........"
-	"hgf......."
-	"hgfe......"
-	"hgfed....."
-	"hgfedc...."
-	"hgfedcb..."
-	"hgfedcba.."
-	"hgfedcbah."
-	"hgfedcbahg"
-	"iiiiiiiiii"
-};
+#define HIT_SIDE_TOP 0
+#define HIT_SIDE_BOTTOM 1
+#define HIT_SIDE_LEFT 2
+#define HIT_SIDE_RIGHT 3
 
-u8 block_cols[][3] = {
-	{ 38, 217, 95 },
-	{ 27, 188, 155 },
-	{ 40, 136, 229 },
-	{ 155, 88, 181 },
-	{ 226, 93, 181 },
-	{ 237, 65, 52 },
-	{ 231, 126, 35 },
-	{ 241, 196, 15 },
-	{ 190, 195, 199 },
-};
+typedef struct paddle {
+	float x;
+	float y;
+	float w;
+	float h;
+	SpriteInfo sprite;
+} Paddle;
 
-static float ball_x, ball_y;
-static float paddle_x, paddle_y;
-static float ball_vel_x, ball_vel_y;
+typedef struct ball {
+	bool exists;
+	float x;
+	float y;
+	float radius;
+	float vel_x;
+	float vel_y;
+	Paddle *glued_to_paddle;
+	float glued_pos;
+	SpriteInfo sprite;
+} Ball;
 
-static void ResetField()
+static Ball balls[MAX_BALLS];
+static Paddle paddle;
+static int num_balls;
+static SpriteData *game_sprites;
+
+static void InitBalls()
 {
-	ball_x = MAP_WIDTH*MAP_BLOCK_W/2;
-	ball_y = 160;
-	ball_vel_x = 0.5f;
-	ball_vel_y = 1.0f;
+	int i;
+	for(i=0; i<MAX_BALLS; i++) {
+		balls[i].exists = false;
+		SpriteInit(&balls[i].sprite, game_sprites);
+		SpriteSetImage(&balls[i].sprite, "ball_blue");
+	}
+	num_balls = 0;
+}
+
+static void InitPaddle()
+{
+	int i;
+	paddle.x = (MAP_WIDTH*MAP_BRICK_W/2);
+	paddle.y = (MAP_HEIGHT*MAP_BRICK_H)-16;
+	paddle.w = 40;
+	paddle.h = 8;
+	SpriteInit(&paddle.sprite, game_sprites);
+	SpriteSetImage(&paddle.sprite, "paddle");
+	SpriteSetPos(&paddle.sprite, paddle.x+MAP_X_OFS, paddle.y+MAP_Y_OFS);
+}
+
+static void CreateBall()
+{
+	int i, j;
+	float angle;
+	for(i=0; i<MAX_BALLS; i++) {
+		if(!balls[i].exists) {
+			balls[i].exists = true;
+			break;
+		}
+	}
+	if(i == MAX_BALLS) {
+		return;
+	}
+	balls[i].radius = 4;
+	balls[i].y = paddle.y-(paddle.h/2)-balls[i].radius;
+	angle = M_DTOR*((rand()%90)+30);
+	balls[i].vel_x = BALL_VELOCITY*cosf(angle);
+	balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
+	balls[i].glued_to_paddle = NULL;
+	balls[i].glued_pos = 0;
+	balls[i].x = paddle.x+balls[i].glued_pos;
+	SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
+	num_balls++;
 }
 
 void StageGameInit()
 {
 	RenderSetSize(320, 240);
-	ResetField();
-	paddle_x = MAP_WIDTH*MAP_BLOCK_W/2;
-	paddle_y = 210;
+	game_sprites = SpriteLoadFile("gamesprites.spr");
+	InitBalls();
+	InitPaddle();
+	CreateBall();
+	MapLoad(0);
+	
 }
- 
-static bool TestMapCollision(int x, int y)
+
+static bool TestPaddleCollision(Ball *ball)
 {
-	int map_x = x/MAP_BLOCK_W;
-	int map_y = y/MAP_BLOCK_H;
-	if(map_x >= 0 && map_x < MAP_WIDTH && map_y >= 0 && map_y < MAP_HEIGHT) {
-		if(map_data[(map_y*MAP_WIDTH)+map_x] != '.') {
-			map_data[(map_y*MAP_WIDTH)+map_x] = '.';
+	if((ball->y+ball->radius > paddle.y-(paddle.h/2)) &&
+		(ball->y-ball->radius < paddle.y+(paddle.h/2)) &&
+		(ball->x+ball->radius > paddle.x-(paddle.w/2)) &&
+		(ball->x-ball->radius < paddle.x+(paddle.w/2))) {
 			return true;
 		}
+	return false;
+}
+
+static bool TestBrickCollision(Ball *ball, int side)
+{
+	MapBrick *brick;
+	switch(side) {
+		case HIT_SIDE_TOP:
+			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
+			break;
+			
+		case HIT_SIDE_BOTTOM:
+			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, (ball->y+ball->radius)/MAP_BRICK_H);
+			break;
+			
+		case HIT_SIDE_LEFT:
+			brick = MapGetBrick((ball->x-ball->radius)/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
+			break;
+			
+		case HIT_SIDE_RIGHT:
+			brick = MapGetBrick((ball->x+ball->radius)/MAP_BRICK_W, (ball->y-ball->radius)/MAP_BRICK_H);
+			break;
+			
+		default:
+			brick = NULL;
+			break;
+	}
+	if(brick && brick->type != BRICK_EMPTY) {
+		switch(side) {
+			case HIT_SIDE_TOP:
+			case HIT_SIDE_BOTTOM:
+				ball->vel_y = -ball->vel_y;
+				break;
+				
+			case HIT_SIDE_LEFT:
+			case HIT_SIDE_RIGHT:
+				ball->vel_x = -ball->vel_x;
+				break;
+				
+			default:
+				break;
+		}
+		MapDestroyBrick(brick);
+		return true;
 	}
 	return false;
 }
 
-static void UpdateBall()
+static void UpdateBalls()
 {
-	int left, top, right, bottom;
-	ball_x += ball_vel_x;
-	ball_y += ball_vel_y;
-	if(ball_x >= MAP_WIDTH*MAP_BLOCK_W-(BALL_W/2)) {
-		ball_vel_x = -ball_vel_x;
+	int i;
+	bool create_ball = false;
+	for(i=0; i<MAX_BALLS; i++) {
+		if(balls[i].exists) {
+			if(balls[i].glued_to_paddle) {
+				balls[i].x = paddle.x+balls[i].glued_pos;
+				balls[i].y = paddle.y-(paddle.h/2)-balls[i].radius;
+			} else {
+				balls[i].x += balls[i].vel_x;
+				balls[i].y += balls[i].vel_y;
+				if(balls[i].x < balls[i].radius) {
+					balls[i].vel_x = -balls[i].vel_x;
+					balls[i].x = balls[i].radius;
+				}
+				if(balls[i].x > (MAP_WIDTH*MAP_BRICK_W)-balls[i].radius) {
+					balls[i].vel_x = -balls[i].vel_x;
+					balls[i].x = (MAP_WIDTH*MAP_BRICK_W)-balls[i].radius;
+				}
+				if(balls[i].y < balls[i].radius) {
+					balls[i].vel_y = -balls[i].vel_y;
+					balls[i].y = balls[i].radius;
+				}
+				if(balls[i].y > 240+balls[i].radius) {
+					balls[i].exists = false;
+					num_balls--;
+					if(num_balls == 0) {
+						create_ball = true;
+					}
+				}
+				if(TestPaddleCollision(&balls[i])) {
+					float rel_x = (balls[i].x-(paddle.x));
+					float angle = ((-90*(rel_x/paddle.w))+90)*M_DTOR;
+					balls[i].vel_x = BALL_VELOCITY*cosf(angle);
+					balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
+				} else {
+					int left, top, right, bottom;
+					left = (balls[i].x-balls[i].radius)/MAP_BRICK_W;
+					right = (balls[i].x+balls[i].radius)/MAP_BRICK_W;
+					top = (balls[i].y-balls[i].radius)/MAP_BRICK_H;
+					bottom = (balls[i].y+balls[i].radius)/MAP_BRICK_H;
+					if(TestBrickCollision(&balls[i], HIT_SIDE_TOP) || TestBrickCollision(&balls[i], HIT_SIDE_BOTTOM) ||
+						TestBrickCollision(&balls[i], HIT_SIDE_LEFT) || TestBrickCollision(&balls[i], HIT_SIDE_RIGHT)) {
+							
+						}
+				}
+			}
+			SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
+		}
 	}
-	if(ball_x < (BALL_W/2)) {
-		ball_vel_x = -ball_vel_x;
+	if(create_ball) {
+		CreateBall();
 	}
-	if(ball_y < (BALL_H/2)) {
-		ball_vel_y = -ball_vel_y;
+}
+
+static void UpdatePaddle()
+{
+	if(pad_data[0].stick_x < -32 || pad_data[0].button & L_JPAD) {
+		paddle.x -= PADDLE_VELOCITY;
+		if(paddle.x < (paddle.w/2)) {
+			paddle.x = paddle.w/2;
+		}
 	}
-	if(ball_y >= paddle_y && ball_x >= (paddle_x-(PADDLE_W/2)) && ball_x < (paddle_x+(PADDLE_W/2)) && ball_vel_y > 0) {
-		ball_vel_x = ((ball_x-paddle_x)/(PADDLE_W/2))*1.5f;
-		ball_vel_y = -ball_vel_y;
+	if(pad_data[0].stick_x >= 32 || pad_data[0].button & R_JPAD) {
+		paddle.x += PADDLE_VELOCITY;
+		if(paddle.x >= (MAP_WIDTH*MAP_BRICK_W)-(paddle.w/2)) {
+			paddle.x = (MAP_WIDTH*MAP_BRICK_W)-(paddle.w/2);
+		}
 	}
-	if(ball_y >= 240) {
-		ResetField();
-	}
-	left = ball_x-(BALL_W/2);
-	right = ball_x+(BALL_W/2);
-	top = ball_y-(BALL_H/2);
-	bottom = ball_y+(BALL_H/2);
-	if((ball_vel_y < 0 && TestMapCollision(left, top)) ||
-		(ball_vel_y < 0 && TestMapCollision(right, top)) ||
-		(ball_vel_y > 0 && TestMapCollision(left, bottom)) ||
-		(ball_vel_y > 0 && TestMapCollision(right, bottom))) {
-		ball_vel_y = -ball_vel_y;
+	SpriteSetPos(&paddle.sprite, paddle.x+MAP_X_OFS, paddle.y+MAP_Y_OFS);
+}
+
+static void DoBallRelease()
+{
+	int i;
+	for(i=0; i<MAX_BALLS; i++) {
+		if(balls[i].exists && pad_data[0].trigger & A_BUTTON) {
+			balls[i].glued_to_paddle = NULL;
+		}
 	}
 }
 
 void StageGameUpdate()
 {
-	paddle_x += (pad_data[0].stick_x/10);
-	if(paddle_x >= MAP_WIDTH*MAP_BLOCK_W-(PADDLE_W/2)) {
-		paddle_x = MAP_WIDTH*MAP_BLOCK_W-(PADDLE_W/2);
-	}
-	if(paddle_x < (PADDLE_W/2)) {
-		paddle_x = (PADDLE_W/2);
-	}
-	UpdateBall();
-}
-
-static void DrawMap()
-{
-	int i, j;
-	for(i=0; i<MAP_HEIGHT; i++) {
-		for(j=0; j<MAP_WIDTH; j++) {
-			char value = map_data[(i*MAP_WIDTH)+j];
-			if(value != '.') {
-				RenderPutRect((j*MAP_BLOCK_W)+MAP_X_OFS, (i*MAP_BLOCK_H), MAP_BLOCK_W, MAP_BLOCK_H, block_cols[value-'a'][0], block_cols[value-'a'][1],
-					block_cols[value-'a'][2], 255);
-			}
-		}
-	}
+	UpdatePaddle();
+	UpdateBalls();
 }
 
 static void DrawBall()
 {
-	RenderPutRect(ball_x+MAP_X_OFS-(BALL_W/2), ball_y-(BALL_H/2), BALL_W, BALL_H, 255, 255, 255, 255);
+	int i;
+	for(i=0; i<MAX_BALLS; i++) {
+		if(balls[i].exists) {
+			SpriteDraw(&balls[i].sprite);
+		}
+	}
 }
 
 static void DrawPaddle()
 {
-	RenderPutRect(paddle_x+MAP_X_OFS-(PADDLE_W/2), paddle_y, PADDLE_W, PADDLE_H, 255, 255, 255, 255);
+	SpriteDraw(&paddle.sprite);
 }
 
 void StageGameDraw()
 {
     RenderStartFrame();
-	RenderClear(0, 0, 0);
-	DrawMap();
-	DrawBall();
+	RenderClear(0, 127, 127);
+	MapDraw();
 	DrawPaddle();
+	DrawBall();
 	RenderEndFrame();
 }
 
 void StageGameDestroy()
 {
-	
+	MapUnload();
+	free(game_sprites);
+	game_sprites = NULL;
 }

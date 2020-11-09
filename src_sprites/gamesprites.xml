@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sprite>
+	<images>
+		<image filename="game/ball_blue.png" id="ball_blue"/>
+		<image filename="game/ball_red.png" id="ball_red"/>
+		<image filename="game/big_ball_blue.png" id="big_ball_blue"/>
+		<image filename="game/big_ball_red.png" id="big_ball_red"/>
+		<image filename="game/paddle_small.png" id="paddle_small"/>
+		<image filename="game/paddle.png" id="paddle"/>
+		<image filename="game/paddle_long.png" id="paddle_long"/>
+	</images>
+</sprite>

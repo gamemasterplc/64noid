@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sprite>
+	<images>
+		<image filename="bricks/brick_white.png" id="brick_white"/>
+		<image filename="bricks/brick_orange.png" id="brick_orange"/>
+		<image filename="bricks/brick_cyan.png" id="brick_cyan"/>
+		<image filename="bricks/brick_green.png" id="brick_green"/>
+		<image filename="bricks/brick_red.png" id="brick_red"/>
+		<image filename="bricks/brick_blue.png" id="brick_blue"/>
+		<image filename="bricks/brick_magenta.png" id="brick_magenta"/>
+		<image filename="bricks/brick_yellow.png" id="brick_yellow"/>
+		<image filename="bricks/brick_rock3.png" id="brick_rock3"/>
+		<image filename="bricks/brick_rock2.png" id="brick_rock2"/>
+		<image filename="bricks/brick_rock1.png" id="brick_rock1"/>
+		<image filename="bricks/brick_gold.png" id="brick_gold"/>
+	</images>
+</sprite>

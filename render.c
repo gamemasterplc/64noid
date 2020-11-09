@@ -4,7 +4,7 @@
 #include "render.h"
 #include "bool.h"
 
-//#define ENABLE_FPS_COUNTER
+#define ENABLE_FPS_COUNTER
 
 #define GBI_LIST_COUNT 2
 #define GBI_LIST_LEN 8192
@@ -159,6 +159,10 @@ void RenderSetSize(int width, int height)
 void RenderClear(u8 r, u8 g, u8 b)
 {
 	gDPSetCycleType(render_dl_ptr++, G_CYC_FILL);
+	if(render_mode != RENDER_MODE_CLEAR) {
+		gDPSetRenderMode(render_dl_ptr++, G_RM_NOOP, G_RM_NOOP2);
+		render_mode = RENDER_MODE_CLEAR;
+	}
 	#ifdef FRAMEBUF_32BIT
 	gDPSetFillColor(render_dl_ptr++, (r << 24)|(g << 16)|(b << 8)|255);
 	#else

@@ -1,4 +1,5 @@
 #include <nusys.h>
+#include <stdlib.h>
 #include <malloc.h>
 #include "main.h"
 #include "pad.h"
@@ -17,6 +18,7 @@ static StageID curr_stage = STAGE_NONE;
 
 static void GfxCallback(u32 pendingTaskCount)
 {
+	rand(); //Tick RNG on Every Frame
     if (pendingTaskCount == 0) {
 		PadRead();
 		stage_table[curr_stage].update_func();
@@ -26,6 +28,7 @@ static void GfxCallback(u32 pendingTaskCount)
 
 void mainproc(void *dummy)
 {
+	srand(0xD9ED); //Start with known RNG Value
     nuGfxInit();
 	PadInit();
 	InitHeap(_codeSegmentEnd, (u8 *)OS_PHYSICAL_TO_K0(osMemSize-MAX_FRAMEBUF_SIZE)-_codeSegmentEnd);
