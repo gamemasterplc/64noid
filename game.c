@@ -173,8 +173,7 @@ static void CreateFirstBall()
 	balls[i].vel_x = 0;
 	balls[i].vel_y = 0;
 	balls[i].catcher = &paddle;
-	range = paddle.w-(balls[i].radius*2);
-	balls[i].catch_pos = (rand()%range)-((float)range/2);
+	balls[i].catch_pos = 0;
 	balls[i].x = paddle.x+balls[i].catch_pos;
 	SpriteSetImage(&balls[i].sprite, ball_images[curr_ball_size]);
 	SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
