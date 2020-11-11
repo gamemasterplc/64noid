@@ -710,7 +710,6 @@ void StageGameDraw()
 			TextDraw(160, 120, TEXT_ALIGNMENT_CENTER, "You Lose");
 		}
 	}
-	
 	RenderEndFrame();
 }
 

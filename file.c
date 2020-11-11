@@ -12,7 +12,7 @@
 struct decode {
 	u16 read_pos;
 	u32 src;
-	char *dst;
+	u8 *dst;
 	u32 len;
 };
 
@@ -79,7 +79,7 @@ static u8 GetLZByte(struct decode *decode)
 
 static void DecodeLZ(struct decode *decode)
 {
-	char window[LZ_WINDOW_SIZE];
+	u8 window[LZ_WINDOW_SIZE];
     int window_ofs = LZ_WINDOW_START;
     u16 flag = 0;
     memset(window, 0, LZ_WINDOW_SIZE);
