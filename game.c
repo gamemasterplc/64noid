@@ -154,6 +154,33 @@ static void InitBullets()
 	}
 }
 
+static void CreateFirstBall()
+{
+	int i, j;
+	int range;
+	char *ball_images[BALL_SIZE_COUNT] = { "ball", "big_ball" };
+	for(i=0; i<MAX_BALLS; i++) {
+		if(!balls[i].exists) {
+			balls[i].exists = true;
+			break;
+		}
+	}
+	if(i == MAX_BALLS) {
+		return;
+	}
+	balls[i].radius = ball_radius[curr_ball_size];
+	balls[i].y = paddle.y-(paddle.h/2)-balls[i].radius;
+	balls[i].vel_x = 0;
+	balls[i].vel_y = 0;
+	balls[i].catcher = &paddle;
+	range = paddle.w-(balls[i].radius*2);
+	balls[i].catch_pos = (rand()%range)-((float)range/2);
+	balls[i].x = paddle.x+balls[i].catch_pos;
+	SpriteSetImage(&balls[i].sprite, ball_images[curr_ball_size]);
+	SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
+	num_balls++;
+}
+
 static void CreateBall()
 {
 	int i, j;
@@ -193,7 +220,7 @@ void StageGameInit()
 	InitPaddle();
 	InitPowerups();
 	InitBullets();
-	CreateBall();
+	CreateFirstBall();
 	MapLoad(0);
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
@@ -310,7 +337,7 @@ static bool TestBrickCollision(Ball *ball, int side)
 static void UpdateBalls()
 {
 	int i;
-	bool create_ball = false;
+	bool reset_field = false;
 	for(i=0; i<MAX_BALLS; i++) {
 		if(balls[i].exists) {
 			if(balls[i].catcher) {
@@ -335,7 +362,7 @@ static void UpdateBalls()
 					balls[i].exists = false;
 					num_balls--;
 					if(num_balls == 0 && num_lives != 0) {
-						create_ball = true;
+						reset_field = true;
 						num_lives--;
 					}
 				}
@@ -362,8 +389,8 @@ static void UpdateBalls()
 			SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
 		}
 	}
-	if(create_ball) {
-		CreateBall();
+	if(reset_field) {
+		CreateFirstBall();
 	}
 }
 
