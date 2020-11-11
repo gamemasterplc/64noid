@@ -31,8 +31,6 @@ static void LoadMapBricks(char *src)
 		int x = ((i%MAP_WIDTH)*MAP_BRICK_W);
 		int y = ((i/MAP_WIDTH)*MAP_BRICK_H);
 		brick_map[i].type = src[i];
-		brick_map[i].x = x;
-		brick_map[i].y = y;
 		if(brick_map[i].type != BRICK_EMPTY) {
 			SpriteInit(&brick_map[i].sprite, brick_spr_data);
 			SpriteSetImage(&brick_map[i].sprite, brick_image_names[brick_map[i].type-BRICK_START]);

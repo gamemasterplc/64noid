@@ -12,7 +12,7 @@ static char map1_data[MAP_WIDTH*MAP_HEIGHT] = {
 	"hgfedcba.."
 	"hgfedcbah."
 	"hgfedcbahg"
-	"iiiilliiii"
+	".........."
 	".........."
 	".........."
 	".........."

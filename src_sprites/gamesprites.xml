@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sprite>
 	<images>
-		<image filename="game/ball_blue.png" id="ball_blue"/>
-		<image filename="game/ball_red.png" id="ball_red"/>
-		<image filename="game/big_ball_blue.png" id="big_ball_blue"/>
-		<image filename="game/big_ball_red.png" id="big_ball_red"/>
-		<image filename="game/paddle_small.png" id="paddle_small"/>
+		<image filename="game/ball.png" id="ball"/>
+		<image filename="game/big_ball.png" id="big_ball"/>
+		<image filename="game/paddle_short.png" id="paddle_short"/>
 		<image filename="game/paddle.png" id="paddle"/>
 		<image filename="game/paddle_long.png" id="paddle_long"/>
+		<image filename="game/paddle_laser.png" id="paddle_laser"/>
 		<image filename="game/border.png" id="border" format="ia4" origin_x="0.0" origin_y="0.0"/>
 		<image filename="game/field_bg.png" id="field_bg" origin_x="0.0" origin_y="0.0"/>
+		<image filename="game/powerup_laser.png" id="powerup_laser"/>
+		<image filename="game/powerup_enlarge.png" id="powerup_enlarge"/>
+		<image filename="game/powerup_ball_enlarge.png" id="powerup_ball_enlarge"/>
+		<image filename="game/powerup_shrink.png" id="powerup_shrink"/>
+		<image filename="game/powerup_slow.png" id="powerup_slow"/>
+		<image filename="game/powerup_fast.png" id="powerup_fast"/>
+		<image filename="game/powerup_extra_life.png" id="powerup_extra_life"/>
+		<image filename="game/powerup_triple.png" id="powerup_triple"/>
+		<image filename="game/powerup_catch.png" id="powerup_catch"/>
+		<image filename="game/bullet.png" id="bullet"/>
 	</images>
 </sprite>

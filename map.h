@@ -18,8 +18,6 @@
 
 typedef struct map_brick {
 	char type;
-	int x;
-	int y;
 	SpriteInfo sprite;
 } MapBrick;
 
