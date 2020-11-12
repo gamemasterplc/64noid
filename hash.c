@@ -3,27 +3,31 @@
 
 u32 HashGetPath(const char *string)
 {
+	//Initialize Hash Properties
     u32 hash = 16777619;
 	int i;
-	int length = strlen(string);
-    for (i = 0; string[i] != '\0'; i++) {
+	//Calculate Hash
+    for (i=0; string[i]; i++) {
 		if(string[i] == '\\') {
+			//Normalize Slash Direction
 			hash ^= '/';
 		} else {
 			hash ^= string[i];
 		}
-        hash *= 2166136261U;
+        hash *= 2166136261U; //Must be Unsigned Integer to Prevent Warning
     }
     return hash;
 }
 
 u32 HashGet(const char *string)
 {
+	//Initialize Hash Properties
     u32 hash = 16777619;
 	int i;
-    for (i = 0; string[i] != '\0'; i++) {
+	//Calculate Hash
+    for (i=0; string[i]; i++) {
 		hash ^= string[i];
-        hash *= 2166136261U;
+        hash *= 2166136261U; //Must be Unsigned Integer to Prevent Warning
     }
     return hash;
 }

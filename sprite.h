@@ -82,7 +82,7 @@ typedef struct sprite_info {
 	u8 tint_g;
 	u8 tint_b;
 	u8 tint_a;
-} SpriteInfo;
+} SpriteInfo; //Must be Unique for Every Sprite Drawn in the Same Frame
 
 SpriteData *SpriteLoadMemory(void *ptr);
 SpriteData *SpriteLoadFile(const char *filename);

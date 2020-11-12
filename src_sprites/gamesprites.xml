@@ -13,8 +13,6 @@
 		<image filename="game/powerup_enlarge.png" id="powerup_enlarge"/>
 		<image filename="game/powerup_ball_enlarge.png" id="powerup_ball_enlarge"/>
 		<image filename="game/powerup_shrink.png" id="powerup_shrink"/>
-		<image filename="game/powerup_slow.png" id="powerup_slow"/>
-		<image filename="game/powerup_fast.png" id="powerup_fast"/>
 		<image filename="game/powerup_extra_life.png" id="powerup_extra_life"/>
 		<image filename="game/powerup_triple.png" id="powerup_triple"/>
 		<image filename="game/powerup_catch.png" id="powerup_catch"/>

@@ -15,7 +15,7 @@ void PadRead()
 
 bool PadIsConnected(int player)
 {
-	if((pad_mask & (1 << player)) && pad_data[player].errno == 0) {
+	if((pad_mask & (1 << player)) && pad_data[player].errno == 0) { //Check for Connected Pad
 		return true;
 	} else {
 		return false;

@@ -20,18 +20,17 @@ typedef struct file_entry {
     u32 name_hash;
     u32 offset;
     u32 size;
-    u32 compress_flag;
+    u32 compress_type;
 } FileEntry;
 
 extern u8 _file_packSegmentRomStart[];
 
-static u32 num_files __attribute__((aligned(8)));
+static u32 num_files __attribute__((aligned(8))); //Must be 8-Byte Aligned to Read from ROM
 static u32 file_pack_base;
 static FileEntry *file_entries;
 
 void FilePackInit()
 {
-	int i;
 	file_pack_base = (u32)_file_packSegmentRomStart;
 	nuPiReadRom(file_pack_base, &num_files, sizeof(u32));
 	file_entries = malloc(num_files*sizeof(FileEntry));
@@ -46,6 +45,7 @@ static int GetHashFileIdx(u32 hash)
 			return i;
 		}
 	}
+	//Return Sentiel Value for Not Found Hashes
 	return -1;
 }
 
@@ -54,13 +54,16 @@ static void DecodeRaw(struct decode *decode)
 	u32 read_size;
 	while(decode->len) {
 		if(decode->len < READ_BUF_SIZE) {
+			//Fewer than 1024 bytes left
 			read_size = (decode->len+1)&0xFFFFFFFE;
 			decode->len = 0;
 		} else {
+			//At least 1024 bytes left
 			read_size = READ_BUF_SIZE;
 			decode->len -= READ_BUF_SIZE;
 		}
 		nuPiReadRom(decode->src, decode->dst, read_size);
+		//Advance to Next Read
 		decode->src += read_size;
 		decode->dst += read_size;
 	}
@@ -68,8 +71,9 @@ static void DecodeRaw(struct decode *decode)
 
 static u8 GetLZByte(struct decode *decode)
 {
-	static u8 read_buf[READ_BUF_SIZE];
+	static u8 read_buf[READ_BUF_SIZE]; //Static to Retain Value between Calls
 	if(decode->read_pos == READ_BUF_SIZE) {
+		//Load Next Chunk to Read Buffer
 		nuPiReadRom(decode->src, &read_buf, READ_BUF_SIZE);
 		decode->src += READ_BUF_SIZE;
 		decode->read_pos = 0;
@@ -110,11 +114,13 @@ static void DecodeLZ(struct decode *decode)
 void *FileRead(const char *name)
 {
 	int file_idx;
+	//Remove Initial Slashes
 	if(name[0] == '\\') {
 		name++;
 	}
 	file_idx = GetHashFileIdx(HashGetPath(name));
 	if(file_idx != -1) {
+		//Load File
 		struct decode decode;
 		int raw_len = (file_entries[file_idx].size+1) & 0xFFFFFFFE;
 		void *dst = malloc(raw_len);
@@ -122,7 +128,7 @@ void *FileRead(const char *name)
 		decode.src = file_pack_base+file_entries[file_idx].offset;
 		decode.dst = dst;
 		decode.len = raw_len;
-		if(file_entries[file_idx].compress_flag) {
+		if(file_entries[file_idx].compress_type) {
 			DecodeLZ(&decode);
 		} else {
 			DecodeRaw(&decode);

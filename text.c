@@ -214,14 +214,18 @@ static int GetTextWidth(char *str)
 void TextDraw(int x, int y, int alignment, char *str)
 {
 	int orig_x;
+	//Initialize Text Rendering
 	if(render_mode != RENDER_MODE_TEXT) {
 		render_mode = RENDER_MODE_TEXT;
 		gDPSetCombineMode(render_dl_ptr++, G_CC_MODULATERGBA_PRIM, G_CC_MODULATERGBA_PRIM);
 		gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+		//Load Font Texture
 		gDPSetTextureLUT(render_dl_ptr++, G_TT_NONE);
 		gDPLoadTextureTile_4b(render_dl_ptr++, font_texture, G_IM_FMT_I, 96, 54, 0, 0, 95, 53, 0, G_TX_WRAP, G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
 	}
+	//Set Text Color
 	gDPSetPrimColor(render_dl_ptr++, 0, 0, text_r, text_g, text_b, text_a);
+	//Offset Text for Alignment
 	switch(alignment) {
 		case TEXT_ALIGNMENT_LEFT:
 			break;
@@ -238,11 +242,14 @@ void TextDraw(int x, int y, int alignment, char *str)
 	while(*str) {
 		char c = *str;
 		if(c == '\n') {
+			//Advance to Next Line
 			y += 9;
 			x = orig_x;
-		} else if(c >= 32 && c < 128){
+		} else if(c > 32 && c < 128){
+			//Draw Non-Space Character
 			char glyph = c-32;
 			gSPScisTextureRectangle(render_dl_ptr++, x*4, y*4, (x+6)*4, (y+9)*4, 0, (glyph%16)*192, (glyph/16)*288, 1024, 1024);
+			gDPPipeSync(render_dl_ptr++);
 			x += char_widths[glyph];
 		} else {
 			x += char_widths[0];

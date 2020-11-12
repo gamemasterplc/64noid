@@ -8,17 +8,21 @@
 #include "text.h"
 #include "bool.h"
 
+#define SCREEN_W 320
+#define SCREEN_H 240
+
 #define MAX_BALLS 3
 #define MAX_POWERUPS 5
 #define MAX_BULLETS 32
 #define BALL_VELOCITY 2.5
 #define PADDLE_VELOCITY 5.0
+#define BULLET_X_OFS 16
 #define POWERUP_FALL_SPEED 0.833
-#define LASER_DURATION 300
-#define PADDLE_RESIZE_DURATION 300
-#define BIG_BALL_DURATION 300
-#define BALL_SPEED_CHANGE_DURATION 300
-#define PADDLE_STICKY_LENGTH 300
+#define POWERUP_APPEAR_RATE 10
+#define STICK_DEADZONE 10
+#define STICK_X_RANGE 64
+#define MAX_VELOCITY_RATIO 1.5
+#define VELOCITY_RATIO_STEP 0.025
 
 #define HIT_SIDE_TOP 0
 #define HIT_SIDE_BOTTOM 1
@@ -29,12 +33,10 @@
 #define POWERUP_ENLARGE 1
 #define POWERUP_BALL_ENLARGE 2
 #define POWERUP_SHRINK 3
-#define POWERUP_SLOW 4
-#define POWERUP_FAST 5
-#define POWERUP_EXTRA_LIFE 6
-#define POWERUP_TRIPLE 7
-#define POWERUP_CATCH 8
-#define POWERUP_MAX 9
+#define POWERUP_EXTRA_LIFE 4
+#define POWERUP_TRIPLE 5
+#define POWERUP_CATCH 6
+#define POWERUP_MAX 7
 
 #define BALL_SIZE_NORMAL 0
 #define BALL_SIZE_BIG 1
@@ -51,9 +53,8 @@ typedef struct paddle {
 	float y;
 	float w;
 	float h;
-	int sticky_timer;
-	int laser_timer;
-	int size_reset_timer;
+	bool sticky;
+	bool laser;
 	SpriteInfo sprite;
 } Paddle;
 
@@ -64,6 +65,7 @@ typedef struct ball {
 	float radius;
 	float vel_x;
 	float vel_y;
+	float vel_ratio;
 	Paddle *catcher;
 	float catch_pos;
 	SpriteInfo sprite;
@@ -88,10 +90,6 @@ static Ball balls[MAX_BALLS];
 static PowerUp powerups[MAX_POWERUPS];
 static Bullet bullets[MAX_BULLETS];
 static Paddle paddle;
-static float ball_vel_ratio;
-static int reset_vel_timer;
-static int curr_ball_size;
-static int shrink_timer;
 static int num_balls;
 static int num_lives;
 static SpriteData *game_sprites;
@@ -103,8 +101,6 @@ static char *powerup_images[POWERUP_MAX] = {
 	"powerup_enlarge",
 	"powerup_ball_enlarge",
 	"powerup_shrink",
-	"powerup_slow",
-	"powerup_fast",
 	"powerup_extra_life",
 	"powerup_triple",
 	"powerup_catch"
@@ -125,11 +121,13 @@ static void InitBalls()
 
 static void InitPaddle()
 {
+	//Set Paddle to be Normal Paddle at the Middle Bottom of the Screen
 	paddle.x = (MAP_WIDTH*MAP_BRICK_W/2);
 	paddle.y = 200;
 	paddle.w = 40;
 	paddle.h = 8;
-	paddle.size_reset_timer = paddle.laser_timer = paddle.sticky_timer = 0;
+	paddle.sticky = false;
+	paddle.laser = false;
 	SpriteInit(&paddle.sprite, game_sprites);
 	SpriteSetImage(&paddle.sprite, "paddle");
 	SpriteSetPos(&paddle.sprite, paddle.x+MAP_X_OFS, paddle.y+MAP_Y_OFS);
@@ -154,66 +152,76 @@ static void InitBullets()
 	}
 }
 
-static void CreateFirstBall()
+static int FindFreeBall()
 {
-	int i, j;
-	int range;
-	char *ball_images[BALL_SIZE_COUNT] = { "ball", "big_ball" };
+	int i;
 	for(i=0; i<MAX_BALLS; i++) {
 		if(!balls[i].exists) {
-			balls[i].exists = true;
-			break;
+			return i;
 		}
 	}
-	if(i == MAX_BALLS) {
-		return;
+	return NULL;
+}
+
+static void InitBall(Ball *ball, bool attached)
+{
+	float angle;
+	char *ball_images[BALL_SIZE_COUNT] = { "ball", "big_ball" };
+	ball->exists = true;
+	ball->radius = ball_radius[BALL_SIZE_NORMAL];
+	ball->y = paddle.y-(paddle.h/2)-ball->radius;
+	angle = M_DTOR*((rand()%90)+45);
+	ball->vel_x = BALL_VELOCITY*cosf(angle);
+	ball->vel_y = -BALL_VELOCITY*sinf(angle);
+	ball->vel_ratio = 1.0f;
+	if(attached) {
+		ball->catcher = &paddle;
+		switch(rand() % 4) {
+			case 2:
+				ball->catch_pos = -((paddle.w/2)-ball->radius);
+				break;
+				
+			case 3:
+				ball->catch_pos = (paddle.w/2)-ball->radius;
+				break;
+				
+			default:
+				ball->catch_pos = 0;
+				break;
+		}
+	} else {
+		ball->catcher = NULL;
+		ball->catch_pos = 0;
 	}
-	balls[i].radius = ball_radius[curr_ball_size];
-	balls[i].y = paddle.y-(paddle.h/2)-balls[i].radius;
-	balls[i].vel_x = 0;
-	balls[i].vel_y = 0;
-	balls[i].catcher = &paddle;
-	balls[i].catch_pos = 0;
-	balls[i].x = paddle.x+balls[i].catch_pos;
-	SpriteSetImage(&balls[i].sprite, ball_images[curr_ball_size]);
-	SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
-	num_balls++;
+	ball->x = paddle.x+ball->catch_pos;
+	SpriteSetImage(&ball->sprite, ball_images[BALL_SIZE_NORMAL]);
+	SpriteSetPos(&ball->sprite, ball->x+MAP_X_OFS, ball->y+MAP_Y_OFS);
 }
 
 static void CreateBall()
 {
-	int i, j;
-	float angle;
-	char *ball_images[BALL_SIZE_COUNT] = { "ball", "big_ball" };
-	for(i=0; i<MAX_BALLS; i++) {
-		if(!balls[i].exists) {
-			balls[i].exists = true;
-			break;
-		}
-	}
-	if(i == MAX_BALLS) {
+	int ball_idx = FindFreeBall();
+	if(ball_idx == -1) {
 		return;
 	}
-	balls[i].radius = ball_radius[curr_ball_size];
-	balls[i].y = paddle.y-(paddle.h/2)-balls[i].radius;
-	angle = M_DTOR*((rand()%90)+30);
-	balls[i].vel_x = BALL_VELOCITY*cosf(angle);
-	balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
-	balls[i].catcher = NULL;
-	balls[i].catch_pos = 0;
-	balls[i].x = paddle.x+balls[i].catch_pos;
-	SpriteSetImage(&balls[i].sprite, ball_images[curr_ball_size]);
-	SpriteSetPos(&balls[i].sprite, balls[i].x+MAP_X_OFS, balls[i].y+MAP_Y_OFS);
+	InitBall(&balls[ball_idx], false);
+	num_balls++;
+}
+
+static void CreateFirstBall()
+{
+	int ball_idx = FindFreeBall();
+	if(ball_idx == -1) {
+		return;
+	}
+	InitBall(&balls[ball_idx], true);
 	num_balls++;
 }
 
 void StageGameInit()
 {
-	RenderSetSize(320, 240);
+	RenderSetSize(SCREEN_W, SCREEN_H);
 	game_sprites = SpriteLoadFile("gamesprites.spr");
-	ball_vel_ratio = 1.0f;
-	curr_ball_size = BALL_SIZE_NORMAL;
-	reset_vel_timer = shrink_timer = 0;
 	num_lives = 4;
 	InitBalls();
 	InitPaddle();
@@ -257,6 +265,26 @@ static void CreatePowerup(float x, float y)
 	powerups[i].y = y;
 	SpriteSetImage(&powerups[i].sprite, powerup_images[powerups[i].type]);
 	SpriteSetPos(&powerups[i].sprite, x+MAP_X_OFS, y+MAP_Y_OFS);
+}
+
+static void SetPaddleType(int length)
+{
+	char *images[PADDLE_TYPE_COUNT] = {"paddle", "paddle_long", "paddle_short", "paddle_laser"};
+	paddle.w = paddle_width[length];
+	SpriteSetImage(&paddle.sprite, images[length]);
+}
+
+static void ReleaseBalls()
+{
+	int i;
+	for(i=0; i<MAX_BALLS; i++) {
+		if(balls[i].exists && balls[i].catcher) {
+			float angle = ((-90*(balls[i].catch_pos/paddle.w))+90)*M_DTOR;
+			balls[i].catcher = NULL;
+			balls[i].vel_x = BALL_VELOCITY*cosf(angle);
+			balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
+		}
+	}
 }
 
 static bool TestBrickCollision(Ball *ball, int side)
@@ -322,8 +350,11 @@ static bool TestBrickCollision(Ball *ball, int side)
 			default:
 				break;
 		}
-		if(rand() % 5 == 0 && brick->type != BRICK_GOLD) {
-			if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1) {
+		if(brick->type != BRICK_GOLD && brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2) {
+			if(ball->vel_ratio < MAX_VELOCITY_RATIO) {
+				ball->vel_ratio += VELOCITY_RATIO_STEP;
+			}
+			if(rand() % POWERUP_APPEAR_RATE == 0 && brick->type != BRICK_ROCK1) {
 				CreatePowerup(powerup_x, powerup_y);
 			}
 		}
@@ -343,8 +374,8 @@ static void UpdateBalls()
 				balls[i].x = paddle.x+balls[i].catch_pos;
 				balls[i].y = paddle.y-(paddle.h/2)-balls[i].radius;
 			} else {
-				balls[i].x += balls[i].vel_x*ball_vel_ratio;
-				balls[i].y += balls[i].vel_y*ball_vel_ratio;
+				balls[i].x += balls[i].vel_x*balls[i].vel_ratio;
+				balls[i].y += balls[i].vel_y*balls[i].vel_ratio;
 				if(balls[i].x < balls[i].radius) {
 					balls[i].vel_x = -balls[i].vel_x;
 					balls[i].x = balls[i].radius;
@@ -357,7 +388,7 @@ static void UpdateBalls()
 					balls[i].vel_y = -balls[i].vel_y;
 					balls[i].y = balls[i].radius;
 				}
-				if(balls[i].y > 240+balls[i].radius) {
+				if(balls[i].y > SCREEN_H-MAP_Y_OFS+balls[i].radius) {
 					balls[i].exists = false;
 					num_balls--;
 					if(num_balls == 0 && num_lives != 0) {
@@ -366,7 +397,7 @@ static void UpdateBalls()
 					}
 				}
 				if(TestPaddleCollision(&balls[i])) {
-					if(paddle.sticky_timer == 0) {
+					if(!paddle.sticky) {
 						float rel_x = (balls[i].x-paddle.x);
 						float angle = ((-90*(rel_x/paddle.w))+90)*M_DTOR;
 						balls[i].vel_x = BALL_VELOCITY*cosf(angle);
@@ -389,24 +420,14 @@ static void UpdateBalls()
 		}
 	}
 	if(reset_field) {
+		paddle.sticky = false;
+		paddle.laser = false;
+		SetPaddleType(PADDLE_TYPE_NORMAL);
 		CreateFirstBall();
 	}
 }
 
-static void ReleaseBalls()
-{
-	int i;
-	for(i=0; i<MAX_BALLS; i++) {
-		if(balls[i].exists && balls[i].catcher) {
-			float angle = ((-90*(balls[i].catch_pos/paddle.w))+90)*M_DTOR;
-			balls[i].catcher = NULL;
-			balls[i].vel_x = BALL_VELOCITY*cosf(angle);
-			balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
-		}
-	}
-}
-
-static void SetBallSize(int size)
+static void SetCurrentBallSize(int size)
 {
 	int i;
 	char *ball_images[BALL_SIZE_COUNT] = { "ball", "big_ball" };
@@ -416,7 +437,6 @@ static void SetBallSize(int size)
 			SpriteSetImage(&balls[i].sprite, ball_images[size]);
 		}
 	}
-	curr_ball_size = size;
 }
 
 static void CreateBullet(float x, float y)
@@ -438,15 +458,15 @@ static void CreateBullet(float x, float y)
 
 static void UpdatePaddle()
 {
-	if(pad_data[0].stick_x < -10 || pad_data[0].stick_x >= 10) {
-		if(pad_data[0].stick_x < -64 || pad_data[0].stick_x >= 64) {
+	if(pad_data[0].stick_x < -STICK_DEADZONE || pad_data[0].stick_x >= STICK_DEADZONE) {
+		if(pad_data[0].stick_x < -STICK_X_RANGE || pad_data[0].stick_x >= STICK_X_RANGE) {
 			if(pad_data[0].stick_x < 0) {
 				paddle.x -= PADDLE_VELOCITY;
 			} else {
 				paddle.x += PADDLE_VELOCITY;
 			}
 		} else {
-			paddle.x += (PADDLE_VELOCITY*(pad_data[0].stick_x/64.0f));
+			paddle.x += (PADDLE_VELOCITY*((float)pad_data[0].stick_x/STICK_X_RANGE));
 		}
 		
 		if(paddle.x < (paddle.w/2)) {
@@ -457,21 +477,14 @@ static void UpdatePaddle()
 		}
 	}
 	if(pad_data[0].trigger & A_BUTTON) {
-		if(paddle.laser_timer == 0) {
+		if(!paddle.laser) {
 			ReleaseBalls();
 		} else {
-			CreateBullet(paddle.x-16, paddle.y-4);
-			CreateBullet(paddle.x+16, paddle.y-4);
+			CreateBullet(paddle.x-BULLET_X_OFS, paddle.y-4);
+			CreateBullet(paddle.x+BULLET_X_OFS, paddle.y-4);
 		}
 	}
 	SpriteSetPos(&paddle.sprite, paddle.x+MAP_X_OFS, paddle.y+MAP_Y_OFS);
-}
-
-static void SetPaddleType(int length)
-{
-	char *images[PADDLE_TYPE_COUNT] = {"paddle", "paddle_long", "paddle_short", "paddle_laser"};
-	paddle.w = paddle_width[length];
-	SpriteSetImage(&paddle.sprite, images[length]);
 }
 
 static void ReleaseOffEdgeBalls()
@@ -498,40 +511,27 @@ static void ActivatePowerup(int type)
 {
 	switch(type) {
 		case POWERUP_LASER:
-			if(paddle.sticky_timer) {
-				ReleaseBalls();
-				paddle.sticky_timer = 0;
-			}
-			paddle.laser_timer = LASER_DURATION;
+			paddle.sticky = false;
+			paddle.laser = true;
 			SetPaddleType(PADDLE_TYPE_LASER);
+			ReleaseBalls();
 			break;
 			
 		case POWERUP_ENLARGE:
-			paddle.size_reset_timer = PADDLE_RESIZE_DURATION;
+			paddle.laser = false;
 			SetPaddleType(PADDLE_TYPE_LONG);
-			ReleaseOffEdgeBalls();
 			break;
 			
 		case POWERUP_BALL_ENLARGE:
-			shrink_timer = BIG_BALL_DURATION;
-			SetBallSize(BALL_SIZE_BIG);
+			paddle.laser = false;
+			SetCurrentBallSize(BALL_SIZE_BIG);
 			ReleaseOffEdgeBalls();
 			break;
 			
 		case POWERUP_SHRINK:
-			paddle.size_reset_timer = PADDLE_RESIZE_DURATION;
+			paddle.laser = false;
 			SetPaddleType(PADDLE_TYPE_SHORT);
 			ReleaseOffEdgeBalls();
-			break;
-			
-		case POWERUP_SLOW:
-			reset_vel_timer = BALL_SPEED_CHANGE_DURATION;
-			ball_vel_ratio = 0.666f;
-			break;
-			
-		case POWERUP_FAST:
-			reset_vel_timer = BALL_SPEED_CHANGE_DURATION;
-			ball_vel_ratio = 1.5f;
 			break;
 			
 		case POWERUP_EXTRA_LIFE:
@@ -544,10 +544,8 @@ static void ActivatePowerup(int type)
 			break;
 			
 		case POWERUP_CATCH:
-			if(paddle.laser_timer) {
-				paddle.laser_timer = 0;
-			}
-			paddle.sticky_timer = PADDLE_STICKY_LENGTH;
+			paddle.laser = false;
+			paddle.sticky = true;
 			break;
 			
 		default:
@@ -561,7 +559,7 @@ static void UpdatePowerups()
 	for(i=0; i<MAX_POWERUPS; i++) {
 		if(powerups[i].exists) {
 			powerups[i].y += POWERUP_FALL_SPEED;
-			if(powerups[i].y > 240+(MAP_BRICK_H/2)) {
+			if(powerups[i].y > SCREEN_H-MAP_Y_OFS+(MAP_BRICK_H/2)) {
 				powerups[i].exists = false;
 			} else {
 				if((paddle.y+(paddle.h/2)) >= powerups[i].y-(MAP_BRICK_H/2) && (paddle.y-(paddle.h/2)) < powerups[i].y+(MAP_BRICK_H/2)) {
@@ -573,42 +571,6 @@ static void UpdatePowerups()
 				}
 				SpriteSetPos(&powerups[i].sprite, powerups[i].x+MAP_X_OFS, powerups[i].y+MAP_Y_OFS);
 			}
-		}
-	}
-}
-
-static void UpdateTimers()
-{
-	if(paddle.sticky_timer) {
-		paddle.sticky_timer--;
-		if(paddle.sticky_timer == 0) {
-			ReleaseBalls();
-		}
-	}
-	if(paddle.size_reset_timer) {
-		paddle.size_reset_timer--;
-		if(paddle.size_reset_timer == 0) {
-			SetPaddleType(PADDLE_TYPE_NORMAL);
-			ReleaseOffEdgeBalls();
-		}
-	}
-	if(paddle.laser_timer) {
-		paddle.laser_timer--;
-		if(paddle.laser_timer == 0) {
-			SetPaddleType(PADDLE_TYPE_NORMAL);
-		}
-	}
-	if(reset_vel_timer) {
-		reset_vel_timer--;
-		if(reset_vel_timer == 0) {
-			ball_vel_ratio = 1.0;
-		}
-	}
-	if(shrink_timer) {
-		shrink_timer--;
-		if(shrink_timer == 0) {
-			SetBallSize(BALL_SIZE_NORMAL);
-			ReleaseOffEdgeBalls();
 		}
 	}
 }
@@ -628,6 +590,13 @@ static void UpdateBullets()
 			if(brick && brick->type != BRICK_EMPTY) {
 				MapDestroyBrick(brick);
 				bullets[i].exists = false;
+				if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1) {
+					if(rand() % POWERUP_APPEAR_RATE == 0) {
+						float powerup_x = ((int)(bullets[i].x/MAP_BRICK_W)*MAP_BRICK_W)+(MAP_BRICK_W/2.0f);
+						float powerup_y = ((int)((bullets[i].y-4)/MAP_BRICK_H)*MAP_BRICK_H)+(MAP_BRICK_H/2.0f);
+						CreatePowerup(powerup_x, powerup_y);
+					}
+				}
 				continue;
 			}
 			SpriteSetPos(&bullets[i].sprite, bullets[i].x+MAP_X_OFS, bullets[i].y+MAP_Y_OFS);
@@ -642,7 +611,6 @@ void StageGameUpdate()
 		UpdateBalls();
 		UpdatePowerups();
 		UpdateBullets();
-		UpdateTimers();
 	}
 }
 

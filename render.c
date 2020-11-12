@@ -88,6 +88,7 @@ static void MakeRenderMode(OSViMode *mode, int width, int height)
 
 static void PreNMICallback()
 {
+	//Attempt to Prevent Reset Crash
 	nuGfxDisplayOff();
 	osViSetYScale(1);
 }
@@ -95,6 +96,7 @@ static void PreNMICallback()
 void RenderSetSize(int width, int height)
 {
 	int i;
+	//Clamp Framebuffer Size
 	if(width > MAX_FRAMEBUF_W) {
 		width = MAX_FRAMEBUF_W;
 	}
@@ -104,21 +106,27 @@ void RenderSetSize(int width, int height)
 	framebuf_base = OS_PHYSICAL_TO_K0(osMemSize-MAX_FRAMEBUF_SIZE);
 	for(i=0; i<MAX_FRAMEBUFS; i++) {
 		u32 framebuf_ofs;
+		u32 framebuf_size;
+		//Initialize Framebuffers
 		#ifdef FRAMEBUF_32BIT
-		framebuf_ofs = (((width*height*4)+63) & 0xFFFFFFC0)*i;
+		framebuf_size = (((width*height*4)+63) & 0xFFFFFFC0);
+		framebuf_ofs = framebuf_size*i;
 		framebuf_list[i] = (u8 *)framebuf_base+framebuf_ofs;
-		memset(framebuf_list[i], 0, (((width*height*4)+63) & 0xFFFFFFC0));
+		memset(framebuf_list[i], 0, framebuf_size);
 		#else
-		framebuf_ofs = (((width*height*2)+63) & 0xFFFFFFC0)*i;
+		framebuf_size = (((width*height*2)+63) & 0xFFFFFFC0);
+		framebuf_ofs = framebuf_size*i;
 		framebuf_list[i] = (u8 *)framebuf_base+framebuf_ofs;
-		memset(framebuf_list[i], 0, (((width*height*2)+63) & 0xFFFFFFC0));
+		memset(framebuf_list[i], 0, framebuf_size);
 		#endif
 	}
+	//Initialize Render Properies
 	fb_width = width;
 	fb_height = height;
 	gbi_list_idx = 0;
 	nuGfxTaskAllEndWait();
 	#ifdef FRAMEBUF_32BIT
+	//Copy 32-bit VI Mode
 	switch(osTvType) {
 		case 0:
 			memcpy(&vi_mode, &osViModePalLpn2, sizeof(OSViMode));
@@ -133,6 +141,7 @@ void RenderSetSize(int width, int height)
 			break;
 	}
 	#else
+	//Copy 16-bit VI Mode
 	switch(osTvType) {
 		case 0:
 			memcpy(&vi_mode, &osViModePalLpn1, sizeof(OSViMode));
@@ -147,23 +156,26 @@ void RenderSetSize(int width, int height)
 			break;
 	}
 	#endif
+	//Initialize VI Mode
 	MakeRenderMode(&vi_mode, width, height);
 	osViSetMode(&vi_mode);
 	osViSetSpecialFeatures(OS_VI_GAMMA_OFF);
 	if(osTvType == 0) {
 		osViSetYScale(0.833);
 	}
-	nuPreNMIFuncSet((NUScPreNMIFunc)PreNMICallback);
-	nuGfxSetCfb((u16 **)framebuf_list, MAX_FRAMEBUFS);
+	nuPreNMIFuncSet((NUScPreNMIFunc)PreNMICallback); //Callback to attempt to prevent reset crash
+	nuGfxSetCfb((u16 **)framebuf_list, MAX_FRAMEBUFS); //Initialize CFB List
 }
 
 void RenderClear(u8 r, u8 g, u8 b)
 {
+	//Enable Render Settings for Framebuffer Clear
 	gDPSetCycleType(render_dl_ptr++, G_CYC_FILL);
 	if(render_mode != RENDER_MODE_CLEAR) {
 		gDPSetRenderMode(render_dl_ptr++, G_RM_NOOP, G_RM_NOOP2);
 		render_mode = RENDER_MODE_CLEAR;
 	}
+	//Draw Clear Rectangle
 	#ifdef FRAMEBUF_32BIT
 	gDPSetFillColor(render_dl_ptr++, (r << 24)|(g << 16)|(b << 8)|255);
 	#else
@@ -171,6 +183,7 @@ void RenderClear(u8 r, u8 g, u8 b)
 	#endif
 	gDPFillRectangle(render_dl_ptr++, 0, 0, fb_width-1, fb_height-1);
 	gDPPipeSync(render_dl_ptr++);
+	//Enable 1-Cycle Mode for Further Rendering
 	gDPSetCycleType(render_dl_ptr++, G_CYC_1CYCLE);
 }
 
@@ -181,50 +194,58 @@ void RenderSetScissor(int x, int y, int w, int h)
 
 void RenderResetScissor()
 {
+	//Set Scissor to Fullscreen
 	gDPSetScissor(render_dl_ptr++, G_SC_NON_INTERLACE, 0, 0, fb_width, fb_height);
 }
 
 void RenderStartFrame()
 {
-	render_dl_ptr = gbi_list[gbi_list_idx];
+	render_dl_ptr = gbi_list[gbi_list_idx]; //Initialize Display Pointer
     // Set the segment register
     gSPSegment(render_dl_ptr++, 0, 0);
     gSPDisplayList(render_dl_ptr++, OS_K0_TO_PHYSICAL(rdpinit_dl));
+	//Set Framebuffer Pointer
 	#ifdef FRAMEBUF_32BIT
 	gDPSetColorImage(render_dl_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_32b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
 	#else
 	gDPSetColorImage(render_dl_ptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, fb_width, OS_K0_TO_PHYSICAL(nuGfxCfb_ptr)); 
 	#endif
+	//Initialize Rendering
 	render_mode = RENDER_MODE_SPRITE;
 	gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 	gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
 	RenderResetScissor();
-	TextSetColor(255, 255, 255, 255);
+	TextSetColor(255, 255, 255, 255); //Force Text Color to White
 }
 
 #ifdef ENABLE_FPS_COUNTER
 static void DrawFPS()
 {
-	static OSTime last_time = 0;
+	static OSTime last_time = 0; //Persistent Time Variable for FPS Calculation
+	//Local Variables for Text Position
 	int text_x = fb_width-40;
 	int text_y = 16;
 	if(last_time == 0) {
 		last_time = osGetTime();
 	} else {
 		OSTime this_time = osGetTime();
-		float time_float = (float)(OS_CYCLES_TO_USEC(this_time-last_time)/1000)/1000;
-		int fps = 1/time_float;
+		float delta_time = (float)(OS_CYCLES_TO_USEC(this_time-last_time)/1000)/1000;
+		int fps = 1/delta_time; //Inverse of Delta Time
+		//Clamp FPS to 99
 		if(fps > 99) {
 			fps = 99;
 		}
 		last_time = this_time;
+		//Setup Render Mode to Draw FPS Digits Sprites
 		if(render_mode != RENDER_MODE_SPRITE) {
 			gDPSetCombineMode(render_dl_ptr++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 			gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
 			render_mode = RENDER_MODE_SPRITE;
 		}
+		//Load FPS Digit Textures
 		gDPSetTextureLUT(render_dl_ptr++, G_TT_NONE);
 		gDPLoadTextureTile_4b(render_dl_ptr++, fps_digits, G_IM_FMT_IA, 80, 8, 0, 0, 79, 7, 0, G_TX_WRAP, G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+		//Draw FPS Digits
 		gSPTextureRectangle(render_dl_ptr++, (text_x*4), (text_y*4), (text_x+8)*4, (text_y+8)*4, 0, (fps/10)*256, 0, 1024, 1024);
 		text_x += 8;
 		gSPTextureRectangle(render_dl_ptr++, (text_x*4), (text_y*4), (text_x+8)*4, (text_y+8)*4, 0, (fps%10)*256, 0, 1024, 1024);
@@ -237,20 +258,24 @@ void RenderEndFrame()
 	#ifdef ENABLE_FPS_COUNTER
 	DrawFPS();
 	#endif
+	//Write Display List End and Send Task
 	gDPFullSync(render_dl_ptr++);
     gSPEndDisplayList(render_dl_ptr++);
     nuGfxTaskStart(gbi_list[gbi_list_idx], (s32)(render_dl_ptr - gbi_list[gbi_list_idx]) * sizeof(Gfx), NU_GFX_UCODE_S2DEX, NU_SC_SWAPBUFFER);
+	//Change to Next Task
 	gbi_list_idx++;
 	gbi_list_idx %= GBI_LIST_COUNT;
 }
 
 void RenderPutRect(int x, int y, int w, int h, u8 r, u8 g, u8 b, u8 a)
 {
+	//Setup Rectangle Drawing
 	if(render_mode != RENDER_MODE_RECT) {
 		gDPSetCombineMode(render_dl_ptr++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
 		gDPSetRenderMode(render_dl_ptr++, G_RM_XLU_SURF, G_RM_XLU_SURF);
 		render_mode = RENDER_MODE_RECT;
 	}
+	//Draw Rectangle
 	gDPSetPrimColor(render_dl_ptr++, 0, 0, r, g, b, a);
 	gDPScisFillRectangle(render_dl_ptr++, x, y, x+w, y+h);
 }
