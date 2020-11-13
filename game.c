@@ -53,6 +53,7 @@ typedef struct paddle {
 	float y;
 	float w;
 	float h;
+	int type;
 	bool sticky;
 	bool laser;
 	SpriteInfo sprite;
@@ -267,11 +268,14 @@ static void CreatePowerup(float x, float y)
 	SpriteSetPos(&powerups[i].sprite, x+MAP_X_OFS, y+MAP_Y_OFS);
 }
 
-static void SetPaddleType(int length)
+static void SetPaddleType(int type)
 {
 	char *images[PADDLE_TYPE_COUNT] = {"paddle", "paddle_long", "paddle_short", "paddle_laser"};
-	paddle.w = paddle_width[length];
-	SpriteSetImage(&paddle.sprite, images[length]);
+	paddle.w = paddle_width[type];
+	SpriteSetImage(&paddle.sprite, images[type]);
+	if(type != PADDLE_TYPE_LASER) {
+		paddle.type = type;
+	}
 }
 
 static void ReleaseBalls()
@@ -519,18 +523,27 @@ static void ActivatePowerup(int type)
 			
 		case POWERUP_ENLARGE:
 			paddle.laser = false;
-			SetPaddleType(PADDLE_TYPE_LONG);
+			if(paddle.type == PADDLE_TYPE_SHORT) {
+				SetPaddleType(PADDLE_TYPE_NORMAL);
+			} else {
+				SetPaddleType(PADDLE_TYPE_LONG);
+			}
 			break;
 			
 		case POWERUP_BALL_ENLARGE:
 			paddle.laser = false;
+			SetPaddleType(paddle.type);
 			SetCurrentBallSize(BALL_SIZE_BIG);
 			ReleaseOffEdgeBalls();
 			break;
 			
 		case POWERUP_SHRINK:
 			paddle.laser = false;
-			SetPaddleType(PADDLE_TYPE_SHORT);
+			if(paddle.type == PADDLE_TYPE_LONG) {
+				SetPaddleType(PADDLE_TYPE_NORMAL);
+			} else {
+				SetPaddleType(PADDLE_TYPE_SHORT);
+			}
 			ReleaseOffEdgeBalls();
 			break;
 			
@@ -546,6 +559,7 @@ static void ActivatePowerup(int type)
 		case POWERUP_CATCH:
 			paddle.laser = false;
 			paddle.sticky = true;
+			SetPaddleType(paddle.type);
 			break;
 			
 		default:
