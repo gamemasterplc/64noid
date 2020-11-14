@@ -15,7 +15,7 @@
 #define MAX_BALLS 3
 #define MAX_POWERUPS 5
 #define MAX_BULLETS 32
-#define BALL_VELOCITY 2.5
+#define BALL_VELOCITY 2.0
 #define PADDLE_VELOCITY 5.0
 #define PADDLE_ANGLE_RANGE 60
 #define BULLET_X_OFS 16
@@ -178,7 +178,7 @@ static void InitBall(Ball *ball, bool attached)
 	ball->vel_ratio = 1.0f;
 	if(attached) {
 		ball->catcher = &paddle;
-		ball->catch_pos = (rand()%16)-8;
+		ball->catch_pos = 4;
 	} else {
 		ball->catcher = NULL;
 		ball->catch_pos = 0;

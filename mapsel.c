@@ -7,7 +7,7 @@
 
 #define SCREEN_W 320
 #define SCREEN_H 240
-#define CURSOR_DEADZONE 10
+#define CURSOR_DEADZONE 32
 #define CURSOR_DELAY 12
 
 static int cursor_pos;
@@ -71,7 +71,7 @@ void MapSelectUpdate()
 			case 0:
 				map_num_temp--;
 				if(map_num_temp < 0) {
-					map_num_temp = num_maps;
+					map_num_temp = num_maps-1;
 				}
 				break;
 				
