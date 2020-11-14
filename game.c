@@ -15,7 +15,7 @@
 #define MAX_BALLS 3
 #define MAX_POWERUPS 5
 #define MAX_BULLETS 32
-#define BALL_VELOCITY 2.0
+#define BALL_VELOCITY 2.5
 #define PADDLE_VELOCITY 5.0
 #define PADDLE_ANGLE_RANGE 60
 #define BULLET_X_OFS 16
@@ -23,8 +23,6 @@
 #define POWERUP_APPEAR_RATE 10
 #define STICK_DEADZONE 10
 #define STICK_X_RANGE 64
-#define MAX_VELOCITY_RATIO 1.5
-#define VELOCITY_RATIO_STEP 0.025
 
 #define HIT_SIDE_TOP 0
 #define HIT_SIDE_BOTTOM 1
@@ -343,9 +341,6 @@ static bool TestBrickCollision(Ball *ball, int side)
 				break;
 		}
 		if(brick->type != BRICK_GOLD && brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2) {
-			if(ball->vel_ratio < MAX_VELOCITY_RATIO) {
-				ball->vel_ratio += VELOCITY_RATIO_STEP;
-			}
 			if(rand() % POWERUP_APPEAR_RATE == 0 && brick->type != BRICK_ROCK1) {
 				CreatePowerup(powerup_x, powerup_y);
 			}
