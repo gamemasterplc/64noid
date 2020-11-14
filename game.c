@@ -16,6 +16,7 @@
 #define MAX_BULLETS 32
 #define BALL_VELOCITY 2.5
 #define PADDLE_VELOCITY 5.0
+#define PADDLE_ANGLE_RANGE 90
 #define BULLET_X_OFS 16
 #define POWERUP_FALL_SPEED 0.833
 #define POWERUP_APPEAR_RATE 10
@@ -171,25 +172,13 @@ static void InitBall(Ball *ball, bool attached)
 	ball->exists = true;
 	ball->radius = ball_radius[BALL_SIZE_NORMAL];
 	ball->y = paddle.y-(paddle.h/2)-ball->radius;
-	angle = M_DTOR*((rand()%90)+45);
+	angle = M_DTOR*((rand()%PADDLE_ANGLE_RANGE)+(PADDLE_ANGLE_RANGE/2));
 	ball->vel_x = BALL_VELOCITY*cosf(angle);
 	ball->vel_y = -BALL_VELOCITY*sinf(angle);
 	ball->vel_ratio = 1.0f;
 	if(attached) {
 		ball->catcher = &paddle;
-		switch(rand() % 4) {
-			case 2:
-				ball->catch_pos = -((paddle.w/2)-ball->radius);
-				break;
-				
-			case 3:
-				ball->catch_pos = (paddle.w/2)-ball->radius;
-				break;
-				
-			default:
-				ball->catch_pos = 0;
-				break;
-		}
+		ball->catch_pos = (rand()%16)-8;
 	} else {
 		ball->catcher = NULL;
 		ball->catch_pos = 0;
@@ -395,7 +384,7 @@ static void UpdateBalls()
 				if(balls[i].y > SCREEN_H-MAP_Y_OFS+balls[i].radius) {
 					balls[i].exists = false;
 					num_balls--;
-					if(num_balls == 0 && num_lives != 0) {
+					if(num_balls == 0) {
 						reset_field = true;
 						num_lives--;
 					}
@@ -403,7 +392,7 @@ static void UpdateBalls()
 				if(TestPaddleCollision(&balls[i])) {
 					if(!paddle.sticky) {
 						float rel_x = (balls[i].x-paddle.x);
-						float angle = ((-90*(rel_x/paddle.w))+90)*M_DTOR;
+						float angle = ((-PADDLE_ANGLE_RANGE*(rel_x/paddle.w))+PADDLE_ANGLE_RANGE)*M_DTOR;
 						balls[i].vel_x = BALL_VELOCITY*cosf(angle);
 						balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
 					} else {
@@ -502,7 +491,7 @@ static void ReleaseOffEdgeBalls()
 				if(balls[i].catch_pos < 0) {
 					side = -1;
 				}
-				angle = ((-90*side)+90)*M_DTOR;
+				angle = ((-PADDLE_ANGLE_RANGE*side)+PADDLE_ANGLE_RANGE)*M_DTOR;
 				balls[i].catcher = NULL;
 				balls[i].vel_x = BALL_VELOCITY*cosf(angle);
 				balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
@@ -523,28 +512,32 @@ static void ActivatePowerup(int type)
 			
 		case POWERUP_ENLARGE:
 			paddle.laser = false;
+			paddle.sticky = false;
 			if(paddle.type == PADDLE_TYPE_SHORT) {
 				SetPaddleType(PADDLE_TYPE_NORMAL);
 			} else {
 				SetPaddleType(PADDLE_TYPE_LONG);
 			}
+			ReleaseBalls();
 			break;
 			
 		case POWERUP_BALL_ENLARGE:
 			paddle.laser = false;
+			paddle.sticky = false;
 			SetPaddleType(paddle.type);
 			SetCurrentBallSize(BALL_SIZE_BIG);
-			ReleaseOffEdgeBalls();
+			ReleaseBalls();
 			break;
 			
 		case POWERUP_SHRINK:
 			paddle.laser = false;
+			paddle.sticky = false;
 			if(paddle.type == PADDLE_TYPE_LONG) {
 				SetPaddleType(PADDLE_TYPE_NORMAL);
 			} else {
 				SetPaddleType(PADDLE_TYPE_SHORT);
 			}
-			ReleaseOffEdgeBalls();
+			ReleaseBalls();
 			break;
 			
 		case POWERUP_EXTRA_LIFE:
@@ -620,12 +613,10 @@ static void UpdateBullets()
 
 void StageGameUpdate()
 {
-	if(num_lives > 0 && MapGetNumBricks() > 0) {
-		UpdatePaddle();
-		UpdateBalls();
-		UpdatePowerups();
-		UpdateBullets();
-	}
+	UpdatePaddle();
+	UpdateBalls();
+	UpdatePowerups();
+	UpdateBullets();
 }
 
 static void DrawBalls()
@@ -676,22 +667,14 @@ void StageGameDraw()
 {
     RenderStartFrame();
 	RenderClear(0, 0, 0);
-	if(num_lives > 0 && MapGetNumBricks() > 0) {
-		SpriteDraw(border_sprite);
-		SpriteDraw(field_bg_sprite);
-		MapDraw();
-		DrawPaddle();
-		DrawPowerups();
-		DrawBalls();
-		DrawBullets();
-		DrawHUD();
-	} else {
-		if(num_lives > 0) {
-			TextDraw(160, 120, TEXT_ALIGNMENT_CENTER, "You Win");
-		} else {
-			TextDraw(160, 120, TEXT_ALIGNMENT_CENTER, "You Lose");
-		}
-	}
+	SpriteDraw(border_sprite);
+	SpriteDraw(field_bg_sprite);
+	MapDraw();
+	DrawPaddle();
+	DrawPowerups();
+	DrawBalls();
+	DrawBullets();
+	DrawHUD();
 	RenderEndFrame();
 }
 
