@@ -6,10 +6,13 @@
 #include "file.h"
 #include "render.h"
 #include "game.h"
+#include "mapsel.h"
+#include "save.h"
 
 extern u8 _codeSegmentEnd[];
 
 static StageEntry stage_table[STAGE_MAX] = {
+	{ MapSelectInit, MapSelectUpdate, MapSelectDraw, NULL },
 	{ StageGameInit, StageGameUpdate, StageGameDraw, StageGameDestroy },
 };
 
@@ -31,9 +34,10 @@ void mainproc(void *dummy)
 	srand(0xD9ED); //Start with known RNG Value
     nuGfxInit();
 	PadInit();
+	SaveInit();
 	InitHeap(_codeSegmentEnd, (u8 *)OS_PHYSICAL_TO_K0(osMemSize-MAX_FRAMEBUF_SIZE)-_codeSegmentEnd);
     FilePackInit();
-	next_stage = STAGE_GAME;
+	next_stage = STAGE_MAPSELECT;
     while(1) {
 		if(curr_stage != STAGE_NONE && stage_table[curr_stage].destroy_func) {
 			stage_table[curr_stage].destroy_func();

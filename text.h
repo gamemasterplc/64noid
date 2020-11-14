@@ -8,7 +8,6 @@
 #define TEXT_ALIGNMENT_RIGHT 2
 
 void TextDraw(int x, int y, int alignment, char *str);
-
 void TextSetColor(u8 r, u8 g, u8 b, u8 a);
 
 #endif

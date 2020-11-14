@@ -7,6 +7,7 @@
 #include "sprite.h"
 #include "text.h"
 #include "bool.h"
+#include "save.h"
 
 #define SCREEN_W 320
 #define SCREEN_H 240
@@ -16,7 +17,7 @@
 #define MAX_BULLETS 32
 #define BALL_VELOCITY 2.5
 #define PADDLE_VELOCITY 5.0
-#define PADDLE_ANGLE_RANGE 90
+#define PADDLE_ANGLE_RANGE 60
 #define BULLET_X_OFS 16
 #define POWERUP_FALL_SPEED 0.833
 #define POWERUP_APPEAR_RATE 10
@@ -93,7 +94,6 @@ static PowerUp powerups[MAX_POWERUPS];
 static Bullet bullets[MAX_BULLETS];
 static Paddle paddle;
 static int num_balls;
-static int num_lives;
 static SpriteData *game_sprites;
 static SpriteInfo *border_sprite;
 static SpriteInfo *field_bg_sprite;
@@ -172,7 +172,7 @@ static void InitBall(Ball *ball, bool attached)
 	ball->exists = true;
 	ball->radius = ball_radius[BALL_SIZE_NORMAL];
 	ball->y = paddle.y-(paddle.h/2)-ball->radius;
-	angle = M_DTOR*((rand()%PADDLE_ANGLE_RANGE)+(PADDLE_ANGLE_RANGE/2));
+	angle = M_DTOR*((rand()%PADDLE_ANGLE_RANGE)+(90-(PADDLE_ANGLE_RANGE/2)));
 	ball->vel_x = BALL_VELOCITY*cosf(angle);
 	ball->vel_y = -BALL_VELOCITY*sinf(angle);
 	ball->vel_ratio = 1.0f;
@@ -212,13 +212,12 @@ void StageGameInit()
 {
 	RenderSetSize(SCREEN_W, SCREEN_H);
 	game_sprites = SpriteLoadFile("gamesprites.spr");
-	num_lives = 4;
 	InitBalls();
 	InitPaddle();
 	InitPowerups();
 	InitBullets();
 	CreateFirstBall();
-	MapLoad(0);
+	MapLoad(save_data->map_num);
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
 	SpriteSetPos(border_sprite, MAP_X_OFS-8, MAP_Y_OFS-8);
@@ -386,13 +385,16 @@ static void UpdateBalls()
 					num_balls--;
 					if(num_balls == 0) {
 						reset_field = true;
-						num_lives--;
+						save_data->num_lives--;
+						if(save_data->num_lives == 0) {
+							
+						}
 					}
 				}
 				if(TestPaddleCollision(&balls[i])) {
 					if(!paddle.sticky) {
 						float rel_x = (balls[i].x-paddle.x);
-						float angle = ((-PADDLE_ANGLE_RANGE*(rel_x/paddle.w))+PADDLE_ANGLE_RANGE)*M_DTOR;
+						float angle = ((-PADDLE_ANGLE_RANGE*(rel_x/paddle.w))+90)*M_DTOR;
 						balls[i].vel_x = BALL_VELOCITY*cosf(angle);
 						balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
 					} else {
@@ -491,7 +493,7 @@ static void ReleaseOffEdgeBalls()
 				if(balls[i].catch_pos < 0) {
 					side = -1;
 				}
-				angle = ((-PADDLE_ANGLE_RANGE*side)+PADDLE_ANGLE_RANGE)*M_DTOR;
+				angle = ((-PADDLE_ANGLE_RANGE*side)+90)*M_DTOR;
 				balls[i].catcher = NULL;
 				balls[i].vel_x = BALL_VELOCITY*cosf(angle);
 				balls[i].vel_y = -BALL_VELOCITY*sinf(angle);
@@ -541,18 +543,23 @@ static void ActivatePowerup(int type)
 			break;
 			
 		case POWERUP_EXTRA_LIFE:
-			num_lives++;
+			save_data->num_lives++;
+			paddle.sticky = true;
+			ReleaseBalls();
 			break;
 			
 		case POWERUP_TRIPLE:
 			CreateBall();
 			CreateBall();
+			paddle.sticky = true;
+			ReleaseBalls();
 			break;
 			
 		case POWERUP_CATCH:
 			paddle.laser = false;
 			paddle.sticky = true;
 			SetPaddleType(paddle.type);
+			ReleaseBalls();
 			break;
 			
 		default:
@@ -657,7 +664,7 @@ static void DrawBullets()
 static void DrawHUD()
 {
 	char text_buf[64];
-	sprintf(text_buf, "Lives %d", num_lives);
+	sprintf(text_buf, "Lives %d", save_data->num_lives);
 	TextDraw(228, 24, TEXT_ALIGNMENT_LEFT, text_buf);
 	sprintf(text_buf, "Bricks %d", MapGetNumBricks());
 	TextDraw(228, 33, TEXT_ALIGNMENT_LEFT, text_buf);

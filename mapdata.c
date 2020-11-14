@@ -2,16 +2,34 @@
 
 static char map1_data[MAP_WIDTH*MAP_HEIGHT] = {
 	".........."
-	"h........."
-	"hg........"
-	"hgf......."
-	"hgfe......"
-	"hgfed....."
-	"hgfedc...."
-	"hgfedcb..."
-	"hgfedcba.."
-	"hgfedcbah."
-	"hgfedcbahg"
+	"....gg...."
+	"...ffff..."
+	"..eeeeee.."
+	"..dddddd.."
+	"...cccc..."
+	"....bb...."
+	".........."
+	".........."
+	".........."
+	".........."
+	".........."
+	".........."
+	".........."
+	".........."
+	".........."
+};
+
+static char map2_data[MAP_WIDTH*MAP_HEIGHT] = {
+	".........."
+	".aaaaaaaa."
+	".bbbbbbbb."
+	".cccccccc."
+	".dddddddd."
+	".eeeeeeee."
+	".ffffffff."
+	".gggggggg."
+	".hhhhhhhh."
+	".........."
 	".........."
 	".........."
 	".........."
@@ -22,4 +40,7 @@ static char map1_data[MAP_WIDTH*MAP_HEIGHT] = {
 
 char *mapdata_table[] = {
 	map1_data,
+	map2_data,
 };
+
+int num_maps = sizeof(mapdata_table)/sizeof(char *);
