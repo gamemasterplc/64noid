@@ -28,6 +28,8 @@ void RenderResetScissor();
 void RenderStartFrame();
 void RenderEndFrame();
 void RenderPutRect(int x, int y, int w, int h, u8 r, u8 g, u8 b, u8 a);
+void RenderStartFade(bool fade_in, int duration);
+bool RenderIsFadeOver();
 
 extern Gfx *render_dl_ptr;
 extern int render_mode;

@@ -222,6 +222,7 @@ void StageGameInit()
 	field_bg_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(field_bg_sprite, "field_bg");
 	SpriteSetPos(field_bg_sprite, MAP_X_OFS, MAP_Y_OFS);
+	RenderStartFade(true, 16);
 }
 
 static bool TestPaddleCollision(Ball *ball)
@@ -667,7 +668,6 @@ static void DrawHUD()
 
 void StageGameDraw()
 {
-    RenderStartFrame();
 	RenderClear(0, 0, 0);
 	SpriteDraw(border_sprite);
 	SpriteDraw(field_bg_sprite);
@@ -677,7 +677,6 @@ void StageGameDraw()
 	DrawBalls();
 	DrawBullets();
 	DrawHUD();
-	RenderEndFrame();
 }
 
 void StageGameDestroy()

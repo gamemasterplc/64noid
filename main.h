@@ -7,7 +7,7 @@ typedef struct stage_entry {
 	StageFunc init_func;
 	StageFunc update_func;
 	StageFunc draw_func;
-	StageFunc destroy_func;
+	StageFunc destroy_func; //NULL Means it Doesn't Exist
 } StageEntry;
 
 typedef enum stage_id {

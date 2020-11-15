@@ -25,7 +25,9 @@ static void GfxCallback(u32 pendingTaskCount)
     if (pendingTaskCount == 0) {
 		PadRead();
 		stage_table[curr_stage].update_func();
+		RenderStartFrame();
 		stage_table[curr_stage].draw_func();
+		RenderEndFrame();
 	}
 }
 

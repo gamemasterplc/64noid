@@ -10,6 +10,12 @@
 #define GBI_LIST_COUNT 2
 #define GBI_LIST_LEN 8192
 
+struct fade {
+	float alpha;
+	float speed;
+	int time;
+};
+
 static OSViMode vi_mode;
 static Gfx gbi_list[GBI_LIST_COUNT][GBI_LIST_LEN];
 static int gbi_list_idx;
@@ -17,6 +23,10 @@ static void *framebuf_list[MAX_FRAMEBUFS];
 static void *framebuf_base;
 static int fb_width;
 static int fb_height;
+static struct fade fade;
+static int fade_alpha;
+static int fade_speed;
+static int fade_type;
 
 Gfx *render_dl_ptr;
 int render_mode;
@@ -258,6 +268,16 @@ void RenderEndFrame()
 	#ifdef ENABLE_FPS_COUNTER
 	DrawFPS();
 	#endif
+	if(fade.alpha >= 0) {
+		RenderPutRect(0, 0, fb_width, fb_height, 0, 0, 0, fade.alpha);
+		fade.alpha += fade.speed;
+		if(fade.alpha > 255) {
+			fade.alpha = 255;
+		}
+		if(fade.time > 0) {
+			fade.time--;
+		}
+	}
 	//Write Display List End and Send Task
 	gDPFullSync(render_dl_ptr++);
     gSPEndDisplayList(render_dl_ptr++);
@@ -278,4 +298,27 @@ void RenderPutRect(int x, int y, int w, int h, u8 r, u8 g, u8 b, u8 a)
 	//Draw Rectangle
 	gDPSetPrimColor(render_dl_ptr++, 0, 0, r, g, b, a);
 	gDPScisFillRectangle(render_dl_ptr++, x, y, x+w, y+h);
+}
+
+void RenderStartFade(bool fade_in, int duration)
+{
+	if(duration == 1) {
+		duration = 2;
+	}
+	if(fade_in) {
+		fade.alpha = 255.0f;
+		fade.speed = -255.0f/(duration-1);
+	} else {
+		fade.alpha = 1;
+		fade.speed = 255.0f/(duration-1);
+	}
+	fade.time = duration;
+}
+
+bool RenderIsFadeOver()
+{
+	if(fade.time == 0) {
+		return true;
+	}
+	return false;
 }
