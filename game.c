@@ -176,7 +176,7 @@ static void InitBall(Ball *ball, bool attached)
 	ball->vel_ratio = 1.0f;
 	if(attached) {
 		ball->catcher = &paddle;
-		ball->catch_pos = 4;
+		ball->catch_pos = 0;
 	} else {
 		ball->catcher = NULL;
 		ball->catch_pos = 0;
