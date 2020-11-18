@@ -12,9 +12,12 @@ typedef struct stage_entry {
 
 typedef enum stage_id {
 	STAGE_MAPSELECT = 0,
+	STAGE_NEXTMAP,
 	STAGE_GAME,
 	STAGE_MAX,
 	STAGE_NONE = -1
 } StageID;
+
+void SetNextStage(StageID stage);
 
 #endif

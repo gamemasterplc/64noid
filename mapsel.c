@@ -25,83 +25,75 @@ void MapSelectInit()
 	cursor_pos = 0;
 	cursor_timer = 0;
 	start_stage = false;
-	RenderStartFade(true, 16);
 }
 
 void MapSelectUpdate()
 {
-	if(RenderIsFadeOver()) {
-		if(start_stage) {
-			SetNextStage(STAGE_GAME);
-		}
-		if(pad_data[0].stick_y < -CURSOR_DEADZONE && cursor_timer == 0) {
-			cursor_pos--;
-			cursor_timer = CURSOR_DELAY;
-			if(cursor_pos < 0) {
-				cursor_pos = 1;
-			}
-		}
-		if(pad_data[0].stick_y > CURSOR_DEADZONE && cursor_timer == 0) {
-			cursor_pos++;
-			cursor_timer = CURSOR_DELAY;
-			if(cursor_pos > 1) {
-				cursor_pos = 0;
-			}
-		}
-		if(pad_data[0].stick_y < -CURSOR_DEADZONE && cursor_timer == 0) {
-			cursor_pos--;
-			cursor_timer = CURSOR_DELAY;
-			if(cursor_pos < 0) {
-				cursor_pos = 1;
-			}
-		}
-		if(pad_data[0].stick_x > CURSOR_DEADZONE && cursor_timer == 0) {
-			cursor_timer = CURSOR_DELAY;
-			switch(cursor_pos) {
-				case 0:
-					map_num_temp++;
-					if(map_num_temp >= num_maps) {
-						map_num_temp = 0;
-					}
-					break;
-					
-				case 1:
-					num_lives_temp++;
-					if(num_lives_temp > 99) {
-						num_lives_temp = 99;
-					}
-					break;
-			}
-		}
-		if(pad_data[0].stick_x < -CURSOR_DEADZONE && cursor_timer == 0) {
-			cursor_timer = CURSOR_DELAY;
-			switch(cursor_pos) {
-				case 0:
-					map_num_temp--;
-					if(map_num_temp < 0) {
-						map_num_temp = num_maps-1;
-					}
-					break;
-					
-				case 1:
-					num_lives_temp--;
-					if(num_lives_temp < 0) {
-						num_lives_temp = 0;
-					}
-					break;
-			}
-		}
-		if(cursor_timer > 0) {
-			cursor_timer--;
-		}
-		if(pad_data[0].trigger & START_BUTTON) {
-			save_data->map_num = map_num_temp;
-			save_data->num_lives = num_lives_temp;
-			RenderStartFade(false, 16);
-			start_stage = true;
+	if(pad_data[0].stick_y < -CURSOR_DEADZONE && cursor_timer == 0) {
+		cursor_pos--;
+		cursor_timer = CURSOR_DELAY;
+		if(cursor_pos < 0) {
+			cursor_pos = 1;
 		}
 	}
-	
+	if(pad_data[0].stick_y > CURSOR_DEADZONE && cursor_timer == 0) {
+		cursor_pos++;
+		cursor_timer = CURSOR_DELAY;
+		if(cursor_pos > 1) {
+			cursor_pos = 0;
+		}
+	}
+	if(pad_data[0].stick_y < -CURSOR_DEADZONE && cursor_timer == 0) {
+		cursor_pos--;
+		cursor_timer = CURSOR_DELAY;
+		if(cursor_pos < 0) {
+			cursor_pos = 1;
+		}
+	}
+	if(pad_data[0].stick_x > CURSOR_DEADZONE && cursor_timer == 0) {
+		cursor_timer = CURSOR_DELAY;
+		switch(cursor_pos) {
+			case 0:
+				map_num_temp++;
+				if(map_num_temp >= num_maps) {
+					map_num_temp = 0;
+				}
+				break;
+				
+			case 1:
+				num_lives_temp++;
+				if(num_lives_temp > 99) {
+					num_lives_temp = 99;
+				}
+				break;
+		}
+	}
+	if(pad_data[0].stick_x < -CURSOR_DEADZONE && cursor_timer == 0) {
+		cursor_timer = CURSOR_DELAY;
+		switch(cursor_pos) {
+			case 0:
+				map_num_temp--;
+				if(map_num_temp < 0) {
+					map_num_temp = num_maps-1;
+				}
+				break;
+				
+			case 1:
+				num_lives_temp--;
+				if(num_lives_temp < 0) {
+					num_lives_temp = 0;
+				}
+				break;
+		}
+	}
+	if(cursor_timer > 0) {
+		cursor_timer--;
+	}
+	if(pad_data[0].trigger & START_BUTTON) {
+		save_data->map_num = map_num_temp;
+		save_data->num_lives = num_lives_temp;
+		SetNextStage(STAGE_NEXTMAP);
+	}
 }
 
 static void DrawMapSelectText()
