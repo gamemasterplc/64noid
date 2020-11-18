@@ -104,7 +104,7 @@ static void DrawMapSelectText()
 	} else {
 		TextSetColor(255, 255, 255, 255);
 	}
-	sprintf(text_buf, "Map %d", map_num_temp);
+	sprintf(text_buf, "Map %d", map_num_temp+1);
 	TextDraw(SCREEN_W/2, (SCREEN_H/2)-9, TEXT_ALIGNMENT_CENTER, text_buf);
 	if(cursor_pos == 1) {
 		TextSetColor(0, 255, 0, 255);
