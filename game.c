@@ -160,7 +160,7 @@ static int FindFreeBall()
 			return i;
 		}
 	}
-	return NULL;
+	return -1;
 }
 
 static void InitBall(Ball *ball, bool attached)
@@ -659,18 +659,18 @@ static void DrawBullets()
 static void DrawHUD()
 {
 	char text_buf[64];
-	TextDraw((SCREEN_W-92), 32, TEXT_ALIGNMENT_LEFT, "High Score");
+	TextDraw((SCREEN_W-92), 24, TEXT_ALIGNMENT_LEFT, "High Score");
 	sprintf(text_buf, "%d", save_data->high_score);
-	TextDraw((SCREEN_W-92), 41, TEXT_ALIGNMENT_LEFT, text_buf);
+	TextDraw((SCREEN_W-92), 33, TEXT_ALIGNMENT_LEFT, text_buf);
 	TextDraw((SCREEN_W-92), 60, TEXT_ALIGNMENT_LEFT, "Score");
 	sprintf(text_buf, "%d", save_data->score);
 	TextDraw((SCREEN_W-92), 69, TEXT_ALIGNMENT_LEFT, text_buf);
 	TextDraw((SCREEN_W-92), (SCREEN_H/2)-9, TEXT_ALIGNMENT_LEFT, "Lives");
 	sprintf(text_buf, "%d", save_data->num_lives);
 	TextDraw((SCREEN_W-92), (SCREEN_H/2), TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw((SCREEN_W-92), (SCREEN_H-40), TEXT_ALIGNMENT_LEFT, "Level");
+	TextDraw((SCREEN_W-92), (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Level");
 	sprintf(text_buf, "%d", save_data->map_num+1);
-	TextDraw((SCREEN_W-92), (SCREEN_H-31), TEXT_ALIGNMENT_LEFT, text_buf);
+	TextDraw((SCREEN_W-92), (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
 }
 
 void StageGameDraw()
