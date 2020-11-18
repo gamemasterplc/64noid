@@ -163,6 +163,17 @@ static int FindFreeBall()
 	return -1;
 }
 
+static int FindFirstUsedBall()
+{
+	int i;
+	for(i=0; i<MAX_BALLS; i++) {
+		if(balls[i].exists) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 static void InitBall(Ball *ball, bool attached)
 {
 	float angle;
@@ -189,10 +200,15 @@ static void InitBall(Ball *ball, bool attached)
 static void CreateBall()
 {
 	int ball_idx = FindFreeBall();
+	int exist_ball_idx = FindFirstUsedBall();
 	if(ball_idx == -1) {
 		return;
 	}
 	InitBall(&balls[ball_idx], false);
+	if(exist_ball_idx != -1) {
+		balls[exist_ball_idx].x = balls[ball_idx].x;
+		balls[exist_ball_idx].y = balls[ball_idx].y;
+	}
 	num_balls++;
 }
 
@@ -277,6 +293,23 @@ static void ReleaseBalls()
 	}
 }
 
+static int GetBrickWorth(MapBrick *brick)
+{
+	switch(brick->type) {
+		case BRICK_EMPTY:
+		case BRICK_GOLD:
+		case BRICK_ROCK3:
+		case BRICK_ROCK2:
+			return 0;
+		
+		case BRICK_ROCK1:
+			return (50*(save_data->map_num));
+			
+		default:
+			return 50+(10*(brick->type-BRICK_START));
+	}
+}
+
 static bool TestBrickCollision(Ball *ball, int side)
 {
 	MapBrick *brick;
@@ -344,6 +377,10 @@ static bool TestBrickCollision(Ball *ball, int side)
 			if(rand() % POWERUP_APPEAR_RATE == 0 && brick->type != BRICK_ROCK1) {
 				CreatePowerup(powerup_x, powerup_y);
 			}
+		}
+		save_data->score += GetBrickWorth(brick);
+		if(save_data->score > save_data->high_score) {
+			save_data->high_score = save_data->score;
 		}
 		MapDestroyBrick(brick);
 		return true;
@@ -597,6 +634,10 @@ static void UpdateBullets()
 			}
 			brick = MapGetBrick(bullets[i].x/MAP_BRICK_W, (bullets[i].y-4)/MAP_BRICK_H);
 			if(brick && brick->type != BRICK_EMPTY) {
+				save_data->score += GetBrickWorth(brick);
+				if(save_data->score > save_data->high_score) {
+					save_data->high_score = save_data->score;
+				}
 				MapDestroyBrick(brick);
 				bullets[i].exists = false;
 				if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1) {
