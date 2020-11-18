@@ -7,14 +7,13 @@
 
 #define SCREEN_W 320
 #define SCREEN_H 240
-#define NEXT_MAP_WAIT_TIME 60
+#define NEXT_MAP_WAIT_TIME 120
 
 static int timer;
 
 void NextMapInit()
 {
 	RenderSetSize(SCREEN_W, SCREEN_H);
-	RenderStartFade(true, 16);
 	timer = NEXT_MAP_WAIT_TIME;
 }
 

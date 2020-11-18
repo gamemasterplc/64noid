@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sprite>
+	<images>
+		<image filename="gameover/gameover.png" id="gameover" format="i8" origin_y="0.0"/>
+	</images>
+</sprite>

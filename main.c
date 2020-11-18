@@ -8,6 +8,7 @@
 #include "game.h"
 #include "mapsel.h"
 #include "nextmap.h"
+#include "gameover.h"
 #include "save.h"
 
 extern u8 _codeSegmentEnd[];
@@ -16,6 +17,7 @@ static StageEntry stage_table[STAGE_MAX] = {
 	{ MapSelectInit, MapSelectUpdate, MapSelectDraw, NULL },
 	{ NextMapInit, NextMapUpdate, NextMapDraw, NULL },
 	{ StageGameInit, StageGameUpdate, StageGameDraw, StageGameDestroy },
+	{ GameOverInit, GameOverUpdate, GameOverDraw, GameOverDestroy },
 };
 
 static volatile StageID next_stage;

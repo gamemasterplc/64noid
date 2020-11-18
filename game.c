@@ -6,6 +6,7 @@
 #include "map.h"
 #include "sprite.h"
 #include "text.h"
+#include "main.h"
 #include "bool.h"
 #include "save.h"
 
@@ -419,7 +420,7 @@ static void UpdateBalls()
 						reset_field = true;
 						save_data->num_lives--;
 						if(save_data->num_lives == 0) {
-							
+							SetNextStage(STAGE_GAMEOVER);
 						}
 					}
 				}
@@ -660,6 +661,10 @@ void StageGameUpdate()
 	UpdateBalls();
 	UpdatePowerups();
 	UpdateBullets();
+	if(MapGetNumBricks() == 0) {
+		save_data->map_num++;
+		SetNextStage(STAGE_NEXTMAP);
+	}
 }
 
 static void DrawBalls()

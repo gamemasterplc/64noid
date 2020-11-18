@@ -80,8 +80,8 @@ void MapSelectUpdate()
 				
 			case 1:
 				num_lives_temp--;
-				if(num_lives_temp < 0) {
-					num_lives_temp = 0;
+				if(num_lives_temp < 1) {
+					num_lives_temp = 1;
 				}
 				break;
 		}

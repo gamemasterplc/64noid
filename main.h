@@ -14,6 +14,7 @@ typedef enum stage_id {
 	STAGE_MAPSELECT = 0,
 	STAGE_NEXTMAP,
 	STAGE_GAME,
+	STAGE_GAMEOVER,
 	STAGE_MAX,
 	STAGE_NONE = -1
 } StageID;
