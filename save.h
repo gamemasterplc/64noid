@@ -27,4 +27,8 @@ typedef struct save_buffer {
 
 extern SaveData *save_data;
 
+void SaveReset();
+void SaveInit();
+void SaveWrite();
+
 #endif
