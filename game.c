@@ -670,7 +670,11 @@ void StageGameUpdate()
 	UpdateBullets();
 	if(MapGetNumBricks() == 0) {
 		game_globals.map_num++;
-		SetNextStage(STAGE_NEXTMAP);
+		if(game_globals.map_num == num_maps) {
+			SetNextStage(STAGE_END);
+		} else {
+			SetNextStage(STAGE_NEXTMAP);
+		}
 	}
 }
 
