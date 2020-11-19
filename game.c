@@ -1,6 +1,7 @@
 #include <PR/ultratypes.h>
 #include <PR/gu.h>
 #include <math.h>
+#include "game.h"
 #include "render.h"
 #include "pad.h"
 #include "map.h"
@@ -87,6 +88,8 @@ typedef struct bullet {
 	float y;
 	SpriteInfo sprite;
 } Bullet;
+
+GameGlobals game_globals;
 
 static Ball balls[MAX_BALLS];
 static PowerUp powerups[MAX_POWERUPS];
@@ -232,7 +235,7 @@ void StageGameInit()
 	InitPowerups();
 	InitBullets();
 	CreateFirstBall();
-	MapLoad(save_data->map_num);
+	MapLoad(game_globals.map_num);
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
 	SpriteSetPos(border_sprite, MAP_X_OFS-8, MAP_Y_OFS-8);
@@ -304,7 +307,7 @@ static int GetBrickWorth(MapBrick *brick)
 			return 0;
 		
 		case BRICK_ROCK1:
-			return (50*(save_data->map_num));
+			return (50*(game_globals.map_num));
 			
 		default:
 			return 50+(10*(brick->type-BRICK_START));
@@ -379,9 +382,9 @@ static bool TestBrickCollision(Ball *ball, int side)
 				CreatePowerup(powerup_x, powerup_y);
 			}
 		}
-		save_data->score += GetBrickWorth(brick);
-		if(save_data->score > save_data->high_score) {
-			save_data->high_score = save_data->score;
+		game_globals.score += GetBrickWorth(brick);
+		if(game_globals.score > save_data->high_score) {
+			save_data->high_score = game_globals.score;
 		}
 		MapDestroyBrick(brick);
 		return true;
@@ -418,9 +421,9 @@ static void UpdateBalls()
 					num_balls--;
 					if(num_balls == 0) {
 						reset_field = true;
-						save_data->num_lives--;
-						if(save_data->num_lives == 0) {
-							SetNextStage(STAGE_GAMEOVER);
+						game_globals.num_lives--;
+						if(game_globals.num_lives == 0) {
+							SetNextStage(STAGE_END);
 						}
 					}
 				}
@@ -576,7 +579,7 @@ static void ActivatePowerup(int type)
 			break;
 			
 		case POWERUP_EXTRA_LIFE:
-			save_data->num_lives++;
+			game_globals.num_lives++;
 			paddle.sticky = false;
 			ReleaseBalls();
 			break;
@@ -635,9 +638,9 @@ static void UpdateBullets()
 			}
 			brick = MapGetBrick(bullets[i].x/MAP_BRICK_W, (bullets[i].y-4)/MAP_BRICK_H);
 			if(brick && brick->type != BRICK_EMPTY) {
-				save_data->score += GetBrickWorth(brick);
-				if(save_data->score > save_data->high_score) {
-					save_data->high_score = save_data->score;
+				game_globals.score += GetBrickWorth(brick);
+				if(game_globals.score > save_data->high_score) {
+					save_data->high_score = game_globals.score;
 				}
 				MapDestroyBrick(brick);
 				bullets[i].exists = false;
@@ -662,7 +665,7 @@ void StageGameUpdate()
 	UpdatePowerups();
 	UpdateBullets();
 	if(MapGetNumBricks() == 0) {
-		save_data->map_num++;
+		game_globals.map_num++;
 		SetNextStage(STAGE_NEXTMAP);
 	}
 }
@@ -709,13 +712,13 @@ static void DrawHUD()
 	sprintf(text_buf, "%d", save_data->high_score);
 	TextDraw((SCREEN_W-92), 33, TEXT_ALIGNMENT_LEFT, text_buf);
 	TextDraw((SCREEN_W-92), 60, TEXT_ALIGNMENT_LEFT, "Score");
-	sprintf(text_buf, "%d", save_data->score);
+	sprintf(text_buf, "%d", game_globals.score);
 	TextDraw((SCREEN_W-92), 69, TEXT_ALIGNMENT_LEFT, text_buf);
 	TextDraw((SCREEN_W-92), (SCREEN_H/2)-9, TEXT_ALIGNMENT_LEFT, "Lives");
-	sprintf(text_buf, "%d", save_data->num_lives);
+	sprintf(text_buf, "%d", game_globals.num_lives);
 	TextDraw((SCREEN_W-92), (SCREEN_H/2), TEXT_ALIGNMENT_LEFT, text_buf);
 	TextDraw((SCREEN_W-92), (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Level");
-	sprintf(text_buf, "%d", save_data->map_num+1);
+	sprintf(text_buf, "%d", game_globals.map_num+1);
 	TextDraw((SCREEN_W-92), (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
 }
 

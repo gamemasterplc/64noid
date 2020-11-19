@@ -2,6 +2,7 @@
 #include "nextmap.h"
 #include "render.h"
 #include "main.h"
+#include "game.h"
 #include "save.h"
 #include "text.h"
 
@@ -28,10 +29,10 @@ static void DrawNextMapText()
 {
 	char text_buf[64];
 	TextSetColor(255, 255, 255, 255);
-	sprintf(text_buf, "Level %d", save_data->map_num+1);
+	sprintf(text_buf, "Level %d", game_globals.map_num+1);
 	TextDraw(SCREEN_W/2, (SCREEN_H/2)-5, TEXT_ALIGNMENT_CENTER, text_buf);
 	TextDraw(36, 24, TEXT_ALIGNMENT_CENTER, "Lives");
-	sprintf(text_buf, "%d", save_data->num_lives);
+	sprintf(text_buf, "%d", game_globals.num_lives);
 	TextDraw(36, 33, TEXT_ALIGNMENT_CENTER, text_buf);
 	TextDraw(SCREEN_W/2, 24, TEXT_ALIGNMENT_CENTER, "High Score");
 	sprintf(text_buf, "%d", save_data->high_score);

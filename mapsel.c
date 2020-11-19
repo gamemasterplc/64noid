@@ -3,7 +3,8 @@
 #include "render.h"
 #include "main.h"
 #include "pad.h"
-#include "save.h"
+#include "game.h"
+#include "map.h"
 #include "text.h"
 
 #define SCREEN_W 320
@@ -20,8 +21,8 @@ static bool start_stage;
 void MapSelectInit()
 {
 	RenderSetSize(SCREEN_W, SCREEN_H);
-	map_num_temp = save_data->map_num;
-	num_lives_temp = save_data->num_lives;
+	map_num_temp = 0;
+	num_lives_temp = 5;
 	cursor_pos = 0;
 	cursor_timer = 0;
 	start_stage = false;
@@ -90,9 +91,10 @@ void MapSelectUpdate()
 		cursor_timer--;
 	}
 	if(pad_data[0].trigger & START_BUTTON) {
-		save_data->map_num = map_num_temp;
-		save_data->num_lives = num_lives_temp;
-		SetNextStage(STAGE_NEXTMAP);
+		game_globals.score = 0;
+		game_globals.map_num = map_num_temp;
+		game_globals.num_lives = num_lives_temp;
+		SetNextStage(STAGE_GAME);
 	}
 }
 

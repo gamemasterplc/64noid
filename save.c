@@ -32,11 +32,7 @@ void SaveReset()
 {
 	int i;
 	save_buf.magic = SAVE_MAGIC;
-	save_data->num_lives = 5;
-	save_data->map_num = 0;
-	save_data->score = 0;
 	save_data->high_score = 50000;
-	save_data->enable_continue = false;
 	for(i=0; i<MAX_EDITOR_MAPS; i++) {
 		ClearSaveMap(i);
 	}

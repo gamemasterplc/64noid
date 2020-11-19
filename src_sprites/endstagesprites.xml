@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sprite>
+	<images>
+		<image filename="endstage/gameover.png" id="gameover" format="i8" origin_y="0.0"/>
+		<image filename="endstage/youwin.png" id="youwin" format="i8" origin_y="0.0"/>
+	</images>
+</sprite>

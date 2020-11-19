@@ -9,5 +9,12 @@ void StageGameUpdate();
 void StageGameDraw();
 void StageGameDestroy();
 
+typedef struct game_globals {
+	int num_lives;
+	int map_num;
+	int score;
+} GameGlobals;
+
+extern GameGlobals game_globals;
 
 #endif
