@@ -545,6 +545,7 @@ static void ActivatePowerup(int type)
 			paddle.sticky = false;
 			paddle.laser = true;
 			SetPaddleType(PADDLE_TYPE_LASER);
+			SetCurrentBallSize(BALL_SIZE_NORMAL);
 			ReleaseBalls();
 			break;
 			
@@ -556,6 +557,7 @@ static void ActivatePowerup(int type)
 			} else {
 				SetPaddleType(PADDLE_TYPE_LONG);
 			}
+			SetCurrentBallSize(BALL_SIZE_NORMAL);
 			ReleaseBalls();
 			break;
 			
@@ -575,12 +577,14 @@ static void ActivatePowerup(int type)
 			} else {
 				SetPaddleType(PADDLE_TYPE_SHORT);
 			}
+			SetCurrentBallSize(BALL_SIZE_NORMAL);
 			ReleaseBalls();
 			break;
 			
 		case POWERUP_EXTRA_LIFE:
 			game_globals.num_lives++;
 			paddle.sticky = false;
+			SetCurrentBallSize(BALL_SIZE_NORMAL);
 			ReleaseBalls();
 			break;
 			
