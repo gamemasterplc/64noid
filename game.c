@@ -577,14 +577,14 @@ static void ActivatePowerup(int type)
 			
 		case POWERUP_EXTRA_LIFE:
 			save_data->num_lives++;
-			paddle.sticky = true;
+			paddle.sticky = false;
 			ReleaseBalls();
 			break;
 			
 		case POWERUP_TRIPLE:
 			CreateBall();
 			CreateBall();
-			paddle.sticky = true;
+			paddle.sticky = false;
 			ReleaseBalls();
 			break;
 			
