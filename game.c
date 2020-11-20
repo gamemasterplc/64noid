@@ -15,7 +15,7 @@
 #define SCREEN_H 240
 
 #define MAX_BALLS 3
-#define MAX_POWERUPS 5
+#define MAX_POWERUPS 1
 #define MAX_BULLETS 32
 #define BALL_VELOCITY 2.5
 #define PADDLE_VELOCITY 5.0
