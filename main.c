@@ -9,6 +9,7 @@
 #include "mapsel.h"
 #include "nextmap.h"
 #include "stageend.h"
+#include "title.h"
 #include "save.h"
 
 extern u8 _codeSegmentEnd[];
@@ -18,6 +19,7 @@ static StageEntry stage_table[STAGE_MAX] = {
 	{ NextMapInit, NextMapUpdate, NextMapDraw, NULL },
 	{ StageGameInit, StageGameUpdate, StageGameDraw, StageGameDestroy },
 	{ StageEndInit, StageEndUpdate, StageEndDraw, StageEndDestroy },
+	{ TitleInit, TitleUpdate, TitleDraw, TitleDestroy },
 };
 
 static volatile StageID next_stage;
@@ -50,7 +52,7 @@ void mainproc(void *dummy)
 	SaveInit();
 	InitHeap(_codeSegmentEnd, (u8 *)OS_PHYSICAL_TO_K0(osMemSize-MAX_FRAMEBUF_SIZE)-_codeSegmentEnd);
     FilePackInit();
-	next_stage = STAGE_MAPSELECT;
+	next_stage = STAGE_TITLE;
     while(1) {
 		if(curr_stage != STAGE_NONE && stage_table[curr_stage].destroy_func) {
 			stage_table[curr_stage].destroy_func();

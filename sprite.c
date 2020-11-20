@@ -76,7 +76,11 @@ static int GetSliceHeight(SpriteImage *image)
 	int stride;
 	if(fmt_tile_bytes[image->format] != 0) {
 		//Proper Texture Stride Calculation
-		stride = (((image->w)*fmt_tile_bytes[image->format])+7)>>3;
+		if(image->format == SPRITE_IMG_FORMAT_RGBA32) {
+			stride = (((image->w)*fmt_tile_bytes[image->format]*2)+7)>>3;
+		} else {
+			stride = (((image->w)*fmt_tile_bytes[image->format])+7)>>3;
+		}
 	} else {
 		//Proper 4-bit Texture Stride Calculation
 		stride = (((image->w)>>1)+7)>>3;

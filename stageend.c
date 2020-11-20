@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include "stageend.h"
 #include "render.h"
+#include "pad.h"
 #include "sprite.h"
 #include "game.h"
 #include "map.h"
@@ -29,7 +30,9 @@ void StageEndInit()
 
 void StageEndUpdate()
 {
-	
+	if(pad_data[0].trigger & A_BUTTON) {
+		SetNextStage(STAGE_TITLE);
+	}
 }
 
 void StageEndDraw()

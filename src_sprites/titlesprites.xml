@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sprite>
+	<images>
+		<image filename="title/logo.png" id="logo" origin_y="0.0"/>
+	</images>
+</sprite>

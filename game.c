@@ -211,8 +211,8 @@ static void CreateBall()
 	}
 	InitBall(&balls[ball_idx], false);
 	if(exist_ball_idx != -1) {
-		balls[exist_ball_idx].x = balls[ball_idx].x;
-		balls[exist_ball_idx].y = balls[ball_idx].y;
+		balls[ball_idx].x = balls[exist_ball_idx].x;
+		balls[ball_idx].y = balls[exist_ball_idx].y;
 	}
 	num_balls++;
 }
