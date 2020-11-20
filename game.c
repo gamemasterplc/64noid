@@ -25,6 +25,7 @@
 #define POWERUP_APPEAR_RATE 10
 #define STICK_DEADZONE 10
 #define STICK_X_RANGE 64
+#define UI_POS_X (MAP_X_OFS+(MAP_WIDTH*MAP_BRICK_W)+12)
 
 #define HIT_SIDE_TOP 0
 #define HIT_SIDE_BOTTOM 1
@@ -716,18 +717,18 @@ static void DrawBullets()
 static void DrawHUD()
 {
 	char text_buf[64];
-	TextDraw((SCREEN_W-92), 24, TEXT_ALIGNMENT_LEFT, "High Score");
+	TextDraw(UI_POS_X, 24, TEXT_ALIGNMENT_LEFT, "High Score");
 	sprintf(text_buf, "%d", save_data->high_score);
-	TextDraw((SCREEN_W-92), 33, TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw((SCREEN_W-92), 60, TEXT_ALIGNMENT_LEFT, "Score");
+	TextDraw(UI_POS_X, 33, TEXT_ALIGNMENT_LEFT, text_buf);
+	TextDraw(UI_POS_X, 60, TEXT_ALIGNMENT_LEFT, "Score");
 	sprintf(text_buf, "%d", game_globals.score);
-	TextDraw((SCREEN_W-92), 69, TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw((SCREEN_W-92), (SCREEN_H/2)-9, TEXT_ALIGNMENT_LEFT, "Lives");
+	TextDraw(UI_POS_X, 69, TEXT_ALIGNMENT_LEFT, text_buf);
+	TextDraw(UI_POS_X, (SCREEN_H/2)-9, TEXT_ALIGNMENT_LEFT, "Lives");
 	sprintf(text_buf, "%d", game_globals.num_lives);
-	TextDraw((SCREEN_W-92), (SCREEN_H/2), TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw((SCREEN_W-92), (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Level");
+	TextDraw(UI_POS_X, (SCREEN_H/2), TEXT_ALIGNMENT_LEFT, text_buf);
+	TextDraw(UI_POS_X, (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Level");
 	sprintf(text_buf, "%d", game_globals.map_num+1);
-	TextDraw((SCREEN_W-92), (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
+	TextDraw(UI_POS_X, (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
 }
 
 void StageGameDraw()
