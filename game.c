@@ -99,7 +99,6 @@ static Paddle paddle;
 static int num_balls;
 static SpriteData *game_sprites;
 static SpriteInfo *border_sprite;
-static SpriteInfo *field_bg_sprite;
 
 static char *powerup_images[POWERUP_MAX] = {
 	"powerup_laser",
@@ -240,9 +239,6 @@ void StageGameInit()
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
 	SpriteSetPos(border_sprite, MAP_X_OFS-8, MAP_Y_OFS-8);
-	field_bg_sprite = SpriteCreate(game_sprites);
-	SpriteSetImage(field_bg_sprite, "field_bg");
-	SpriteSetPos(field_bg_sprite, MAP_X_OFS, MAP_Y_OFS);
 }
 
 static bool TestPaddleCollision(Ball *ball)
@@ -735,7 +731,6 @@ void StageGameDraw()
 {
 	RenderClear(0, 0, 0);
 	SpriteDraw(border_sprite);
-	SpriteDraw(field_bg_sprite);
 	MapDraw();
 	DrawPaddle();
 	DrawPowerups();
@@ -748,7 +743,6 @@ void StageGameDestroy()
 {
 	MapUnload();
 	SpriteDelete(border_sprite);
-	SpriteDelete(field_bg_sprite);
 	free(game_sprites);
 	game_sprites = NULL;
 }

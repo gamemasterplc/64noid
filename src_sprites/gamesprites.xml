@@ -8,7 +8,6 @@
 		<image filename="game/paddle_long.png" id="paddle_long"/>
 		<image filename="game/paddle_laser.png" id="paddle_laser"/>
 		<image filename="game/border.png" id="border" format="ia4" origin_x="0.0" origin_y="0.0"/>
-		<image filename="game/field_bg.png" id="field_bg" origin_x="0.0" origin_y="0.0"/>
 		<image filename="game/powerup_laser.png" id="powerup_laser"/>
 		<image filename="game/powerup_enlarge.png" id="powerup_enlarge"/>
 		<image filename="game/powerup_ball_enlarge.png" id="powerup_ball_enlarge"/>
