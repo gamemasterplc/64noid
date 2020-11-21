@@ -4,8 +4,8 @@
 #include <ultra64.h>
 #include "bool.h"
 
-#define MAX_FRAMEBUF_W 640
-#define MAX_FRAMEBUF_H 480
+#define MAX_FRAMEBUF_W 424
+#define MAX_FRAMEBUF_H 240
 //#define FRAMEBUF_32BIT
 #define MAX_FRAMEBUFS 2
 #define TARGET_ALIGNMENT 64
