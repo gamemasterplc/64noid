@@ -805,8 +805,8 @@ void WriteSpriteImage(FILE *file)
             image.pal_format = PALETTE_FORMAT_INVALID;
             image_ofs += GetImageDataSize(xml_sprite.images[i].width, xml_sprite.images[i].height, image.format);
         }
-        image.origin_x = (image.w * xml_sprite.images[i].origin_x * 4.0f);
-        image.origin_y = (image.h * xml_sprite.images[i].origin_y * 4.0f);
+        image.origin_x = image.w * xml_sprite.images[i].origin_x;
+        image.origin_y = image.h * xml_sprite.images[i].origin_y;
         WriteFileU32(file, image.id_hash);
         WriteFileU32(file, image.data_ofs);
         WriteFileU32(file, image.pal_data_ofs);

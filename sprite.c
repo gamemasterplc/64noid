@@ -51,8 +51,8 @@ static void PatchSpriteAnim(SpriteAnim *anim_base, u16 num_anims)
 static void InitS2DSprite(SpriteImage *image, u16 spr_index, u16 y, u16 h)
 {
 	uObjSprite_t *s2d_sprite = &image->s2d_sprites[spr_index].s;
-	s2d_sprite->objX = -image->origin_x;
-	s2d_sprite->objY = y;
+	s2d_sprite->objX = -image->origin_x*4;
+	s2d_sprite->objY = y*4;
 	s2d_sprite->scaleW = s2d_sprite->scaleH = 1024;
 	s2d_sprite->imageW = image->w << 5;
 	s2d_sprite->imageH = h << 5;
@@ -77,7 +77,7 @@ static int GetSliceHeight(SpriteImage *image)
 	if(fmt_tile_bytes[image->format] != 0) {
 		//Proper Texture Stride Calculation
 		if(image->format == SPRITE_IMG_FORMAT_RGBA32) {
-			stride = (((image->w)*fmt_tile_bytes[image->format]*2)+7)>>3;
+			stride = (((image->w)*fmt_tile_bytes[image->format])+7)>>2;
 		} else {
 			stride = (((image->w)*fmt_tile_bytes[image->format])+7)>>3;
 		}
@@ -103,7 +103,7 @@ static void InitS2DSprites(SpriteImage *image)
 	image->s2d_sprites = malloc(total_slice_cnt*sizeof(uObjSprite));
 	for(i=0; i<slice_cnt; i++) {
 		InitS2DSprite(image, i, slice_y, slice_h);
-		slice_y += slice_h*4; //Move by Slice Height in S2D Sprite Coordinates
+		slice_y += slice_h; //Move by Slice Height in S2D Sprite Coordinates
 	}
 	if(remainder_h != 0) {
 		//Initialize Sprite for Partial Slice

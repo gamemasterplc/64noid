@@ -1,2 +1,2 @@
 make
-objdump --syms arkanoid.out > arkanoid.map
+objdump --syms 64noid.out > 64noid.map
