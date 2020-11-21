@@ -212,6 +212,9 @@ static void CreateBall()
 	if(exist_ball_idx != -1) {
 		balls[ball_idx].x = balls[exist_ball_idx].x;
 		balls[ball_idx].y = balls[exist_ball_idx].y;
+		if(balls[exist_ball_idx].vel_y > 0) {
+			balls[ball_idx].vel_y = -balls[ball_idx].vel_y;
+		}
 	}
 	num_balls++;
 }
