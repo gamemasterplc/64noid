@@ -139,7 +139,7 @@ void RenderSetSize(int width, int height)
 	//Copy 32-bit VI Mode
 	switch(osTvType) {
 		case 0:
-			memcpy(&vi_mode, &osViModePalLpn2, sizeof(OSViMode));
+			memcpy(&vi_mode, &osViModeFpalLpn2, sizeof(OSViMode));
 			break;
 			
 		case 1:
@@ -154,7 +154,7 @@ void RenderSetSize(int width, int height)
 	//Copy 16-bit VI Mode
 	switch(osTvType) {
 		case 0:
-			memcpy(&vi_mode, &osViModePalLpn1, sizeof(OSViMode));
+			memcpy(&vi_mode, &osViModeFpalLpn1, sizeof(OSViMode));
 			break;
 			
 		case 1:
