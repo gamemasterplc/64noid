@@ -27,7 +27,7 @@ static SpriteInfo *sprite_c_right;
 static int cursor_x, cursor_y;
 static int cursor_repeat_timer;
 static int brick_repeat_timer;
-static int brick_type = 1;
+static int brick_type = 0;
 
 struct control {
 	char *image_name;
