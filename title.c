@@ -32,10 +32,13 @@ void TitleUpdate()
 		game_globals.map_num = 0;
 		game_globals.num_lives = 5;
 		game_globals.edit_mode = false;
+		game_globals.update_high_score = false;
 		SetNextStage(STAGE_NEXTMAP);
 	}
 	if((pad_data[0].button & (L_TRIG|R_TRIG)) == (L_TRIG|R_TRIG)) {
 		game_globals.edit_mode = true;
+		game_globals.save_map = false;
+		game_globals.update_high_score = false;
 		SetNextStage(STAGE_MAPEDITOR);
 	}
 }

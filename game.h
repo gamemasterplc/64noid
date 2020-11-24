@@ -14,6 +14,8 @@ typedef struct game_globals {
 	int map_num;
 	int score;
 	bool edit_mode;
+	bool save_map;
+	bool update_high_score;
 } GameGlobals;
 
 extern GameGlobals game_globals;

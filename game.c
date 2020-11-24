@@ -389,6 +389,7 @@ static bool TestBrickCollision(Ball *ball, int side)
 		game_globals.score += GetBrickWorth(brick);
 		if(game_globals.score > save_data->high_score) {
 			save_data->high_score = game_globals.score;
+			game_globals.update_high_score = true;
 		}
 		MapDestroyBrick(brick);
 		return true;
@@ -430,7 +431,9 @@ static void UpdateBalls()
 							if (game_globals.edit_mode) {
 								SetNextStage(STAGE_MAPEDITOR);
 							} else {
-								SaveWrite();
+								if(game_globals.update_high_score) {
+									SaveWrite();
+								}
 								SetNextStage(STAGE_END);
 							}
 						}
@@ -654,6 +657,7 @@ static void UpdateBullets()
 				game_globals.score += GetBrickWorth(brick);
 				if(game_globals.score > save_data->high_score) {
 					save_data->high_score = game_globals.score;
+					game_globals.update_high_score = true;
 				}
 				MapDestroyBrick(brick);
 				bullets[i].exists = false;
@@ -682,7 +686,9 @@ void StageGameUpdate()
 			SetNextStage(STAGE_MAPEDITOR);
 		} else {
 			if(game_globals.map_num == num_maps-1) {
-				SaveWrite();
+				if(game_globals.update_high_score) {
+					SaveWrite();
+				}
 				SetNextStage(STAGE_END);
 			} else {
 				SetNextStage(STAGE_NEXTMAP);

@@ -168,6 +168,7 @@ static void UpdateBrickSelect()
 	}
 	if(pad_data[0].trigger & Z_TRIG) {
 		ClearMap();
+		game_globals.save_map = true;
 	}
 }
 
@@ -219,6 +220,7 @@ static void UpdateCursor()
 	if(pad_data[0].trigger & A_BUTTON) {
 		save_data->edited_maps[game_globals.map_num][(cursor_y*MAP_WIDTH)+cursor_x] = brick_types[brick_type];
 		MapSetBrick(MapGetBrick(cursor_x, cursor_y), brick_types[brick_type]);
+		game_globals.save_map = true;
 	}
 }
 
@@ -239,7 +241,9 @@ void MapEditorUpdate()
 	UpdateMapNumber();
 	UpdateCursor();
 	if(pad_data[0].trigger & B_BUTTON) {
-		SaveWrite();
+		if(game_globals.save_map) {
+			SaveWrite();
+		}
 		SetNextStage(STAGE_TITLE);
 	}
 	if(pad_data[0].trigger & START_BUTTON && !IsMapEmpty()) {
