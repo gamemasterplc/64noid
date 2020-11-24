@@ -143,6 +143,17 @@ static void ClearMap()
 	}
 }
 
+static bool IsMapEmpty()
+{
+	int i;
+	for(i=0; i<MAP_WIDTH*MAP_HEIGHT; i++) {
+		if(save_data->edited_maps[game_globals.map_num][i] != BRICK_EMPTY) {
+			return false;
+		}
+	}
+	return true;
+}
+
 static void UpdateBrickSelect()
 {
 	if(brick_repeat_timer == 0) {
@@ -167,8 +178,10 @@ static void UpdateBrickSelect()
 		brick_repeat_timer--;
 	}
 	if(pad_data[0].trigger & Z_TRIG) {
-		ClearMap();
-		game_globals.save_map = true;
+		if(!IsMapEmpty()) {
+			ClearMap();
+			game_globals.save_map = true;
+		}
 	}
 }
 
@@ -222,17 +235,6 @@ static void UpdateCursor()
 		MapSetBrick(MapGetBrick(cursor_x, cursor_y), brick_types[brick_type]);
 		game_globals.save_map = true;
 	}
-}
-
-static bool IsMapEmpty()
-{
-	int i;
-	for(i=0; i<MAP_WIDTH*MAP_HEIGHT; i++) {
-		if(save_data->edited_maps[game_globals.map_num][i] != BRICK_EMPTY) {
-			return false;
-		}
-	}
-	return true;
 }
 
 void MapEditorUpdate()
