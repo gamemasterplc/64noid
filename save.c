@@ -4,7 +4,7 @@
 
 #define SAVE_MAGIC 0x5341
 
-static bool save_loaded;
+static bool save_used;
 static SaveBuffer save_buf;
 SaveData *save_data;
 
@@ -37,7 +37,7 @@ void SaveReset()
 		ClearSaveMap(i);
 	}
 	save_data->checksum = GetSaveChecksum();
-	if(save_loaded) {
+	if(save_used) {
 		nuEepromWrite(0, (u8 *)&save_buf, SAVE_SIZE);
 	}
 }
@@ -46,10 +46,10 @@ void SaveInit()
 {
 	save_data = &save_buf.data;
 	nuEepromMgrInit();
-	save_loaded = false;
+	save_used = false;
 	SaveReset();
 	if(nuEepromCheck() == EEPROM_TYPE_4K || nuEepromCheck() == EEPROM_TYPE_16K) {
-		save_loaded = true;
+		save_used = true;
 		nuEepromRead(0, (u8 *)&save_buf, SAVE_SIZE);
 		if(save_buf.magic != SAVE_MAGIC || save_data->checksum != GetSaveChecksum()) {
 			SaveReset();
@@ -59,7 +59,7 @@ void SaveInit()
 
 void SaveWrite()
 {
-	if(save_loaded) {
+	if(save_used) {
 		nuEepromWrite(0, (u8 *)&save_buf, SAVE_SIZE);
 	}
 }
