@@ -35,6 +35,7 @@ void TitleUpdate()
 		SetNextStage(STAGE_NEXTMAP);
 	}
 	if((pad_data[0].button & (L_TRIG|R_TRIG)) == (L_TRIG|R_TRIG)) {
+		game_globals.edit_mode = true;
 		SetNextStage(STAGE_MAPEDITOR);
 	}
 }

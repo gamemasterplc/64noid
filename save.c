@@ -59,6 +59,7 @@ void SaveInit()
 
 void SaveWrite()
 {
+	save_data->checksum = GetSaveChecksum();
 	if(save_used) {
 		nuEepromWrite(0, (u8 *)&save_buf, SAVE_SIZE);
 	}

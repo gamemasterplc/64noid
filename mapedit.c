@@ -4,6 +4,7 @@
 #include "main.h"
 #include "pad.h"
 #include "game.h"
+#include "save.h"
 #include "map.h"
 #include "text.h"
 
@@ -13,7 +14,7 @@
 #define UI_CENTER_POS_X (UI_BASE_POS_X+((SCREEN_W-UI_BASE_POS_X)/2)-12)
 #define UI_RIGHT_POS_X (SCREEN_W-24)
 #define CURSOR_DEADZONE 32
-#define INPUT_REPEAT_DELAY 12
+#define INPUT_REPEAT_DELAY 8
 
 static SpriteData *mapedit_sprite_data;
 static SpriteInfo *sprite_cursor;
@@ -24,9 +25,9 @@ static SpriteInfo *sprite_border;
 static SpriteInfo *sprite_c_left;
 static SpriteInfo *sprite_c_right;
 static int cursor_x, cursor_y;
-static int cursor_delay;
-static int brick_select_delay;
-static int brick_type;
+static int cursor_repeat_timer;
+static int brick_repeat_timer;
+static int brick_type = 5;
 
 static char *brick_images[] = {
 	"brick_white",
@@ -57,11 +58,10 @@ static void CursorInit()
 	UpdateCursorSpritePos();
 }
 
-static void SetBrickType(int type)
+static void UpdateBrickSprite()
 {
-	brick_type = type;
-	if(type) {
-		SpriteSetImage(sprite_brick, brick_images[type-1]);
+	if(brick_type) {
+		SpriteSetImage(sprite_brick, brick_images[brick_type-1]);
 	}
 }
 
@@ -71,7 +71,7 @@ static void BrickInit()
 	sprite_l_button = SpriteCreate(mapedit_sprite_data);
 	sprite_r_button = SpriteCreate(mapedit_sprite_data);
 	SpriteSetPos(sprite_brick, UI_CENTER_POS_X, 64);
-	SetBrickType(2);
+	UpdateBrickSprite();
 	SpriteSetPos(sprite_l_button, UI_BASE_POS_X+8, 64);
 	SpriteSetImage(sprite_l_button, "button_l");
 	SpriteSetPos(sprite_r_button, UI_RIGHT_POS_X-8, 64);
@@ -104,11 +104,108 @@ void MapEditorInit()
 	CursorInit();
 	LevelButtonInit();
 	BorderInit();
+	cursor_repeat_timer = brick_repeat_timer = 0;
+}
+
+static void UpdateBrickSelect()
+{
+	if(brick_repeat_timer == 0) {
+		if(pad_data[0].button & L_TRIG) {
+			if(brick_type == 0) {
+				brick_type = (sizeof(brick_types)/sizeof(char))-1;
+			} else {
+				brick_type--;
+			}
+			brick_repeat_timer = INPUT_REPEAT_DELAY;
+		}
+		if(pad_data[0].button & R_TRIG) {
+			if(brick_type >= (sizeof(brick_types)/sizeof(char))-1) {
+				brick_type = 0;
+			} else {
+				brick_type++;
+			}
+			brick_repeat_timer = INPUT_REPEAT_DELAY;
+		}
+		UpdateBrickSprite();
+	} else {
+		brick_repeat_timer--;
+	}
+}
+
+static void UpdateMapNumber()
+{
+	if(pad_data[0].trigger & L_CBUTTONS) {
+		if(game_globals.map_num == 0) {
+			game_globals.map_num = MAX_EDITOR_MAPS;
+		} else {
+			game_globals.map_num--;
+		}
+		MapUnload();
+		MapLoadSave(game_globals.map_num);
+	}
+	if(pad_data[0].trigger & R_CBUTTONS) {
+		if(game_globals.map_num == MAX_EDITOR_MAPS-1) {
+			game_globals.map_num = 0;
+		} else {
+			game_globals.map_num++;
+		}
+		MapUnload();
+		MapLoadSave(game_globals.map_num);
+	}
+}
+
+static void UpdateCursor()
+{
+	if(cursor_repeat_timer == 0) {
+		if(pad_data[0].stick_x <= -CURSOR_DEADZONE && cursor_x != 0) {
+			cursor_x--;
+			cursor_repeat_timer = INPUT_REPEAT_DELAY;
+		}
+		if(pad_data[0].stick_x >= CURSOR_DEADZONE && cursor_x < MAP_WIDTH-1) {
+			cursor_x++;
+			cursor_repeat_timer = INPUT_REPEAT_DELAY;
+		}
+		if(pad_data[0].stick_y <= -CURSOR_DEADZONE && cursor_y < MAP_HEIGHT-1) {
+			cursor_y++;
+			cursor_repeat_timer = INPUT_REPEAT_DELAY;
+		}
+		if(pad_data[0].stick_y >= CURSOR_DEADZONE && cursor_y != 0) {
+			cursor_y--;
+			cursor_repeat_timer = INPUT_REPEAT_DELAY;
+		}
+		UpdateCursorSpritePos();
+	} else {
+		cursor_repeat_timer--;
+	}
+	if(pad_data[0].button & A_BUTTON) {
+		save_data->edited_maps[game_globals.map_num][(cursor_y*MAP_WIDTH)+cursor_x] = brick_types[brick_type];
+		MapSetBrick(MapGetBrick(cursor_x, cursor_y), brick_types[brick_type]);
+	}
+}
+
+static bool IsMapEmpty()
+{
+	int i;
+	for(i=0; i<MAP_WIDTH*MAP_HEIGHT; i++) {
+		if(save_data->edited_maps[game_globals.map_num][i] != BRICK_EMPTY) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void MapEditorUpdate()
 {
-	
+	UpdateBrickSelect();
+	UpdateMapNumber();
+	UpdateCursor();
+	if(pad_data[0].trigger & B_BUTTON) {
+		SaveWrite();
+		SetNextStage(STAGE_TITLE);
+	}
+	if(pad_data[0].trigger & START_BUTTON && !IsMapEmpty()) {
+		SetNextStage(STAGE_GAME);
+	}
 }
 
 static DrawMapNumber()
@@ -124,7 +221,9 @@ void MapEditorDraw()
 	MapDraw();
 	SpriteDraw(sprite_border);
 	SpriteDraw(sprite_cursor);
-	SpriteDraw(sprite_brick);
+	if(brick_type != 0) {
+		SpriteDraw(sprite_brick);
+	}
 	SpriteDraw(sprite_l_button);
 	SpriteDraw(sprite_r_button);
 	DrawMapNumber();

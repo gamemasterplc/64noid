@@ -32,10 +32,10 @@ static void LoadMapBricks(char *src)
 		int x = ((i%MAP_WIDTH)*MAP_BRICK_W);
 		int y = ((i/MAP_WIDTH)*MAP_BRICK_H);
 		brick_map[i].type = src[i];
+		SpriteInit(&brick_map[i].sprite, brick_spr_data);
+		SpriteSetPos(&brick_map[i].sprite, x+MAP_X_OFS+(MAP_BRICK_W/2), y+MAP_Y_OFS+(MAP_BRICK_H/2));
 		if(brick_map[i].type != BRICK_EMPTY) {
-			SpriteInit(&brick_map[i].sprite, brick_spr_data);
 			SpriteSetImage(&brick_map[i].sprite, brick_image_names[brick_map[i].type-BRICK_START]);
-			SpriteSetPos(&brick_map[i].sprite, x+MAP_X_OFS+(MAP_BRICK_W/2), y+MAP_Y_OFS+(MAP_BRICK_H/2));
 		}
 	}
 }
@@ -64,7 +64,7 @@ void MapLoadSave(int map_id)
 {
 	brick_spr_data = SpriteLoadFile("bricksprites.spr");
 	brick_map = malloc(MAP_WIDTH*MAP_HEIGHT*sizeof(MapBrick));
-	LoadMapBricks(&save_data->edited_maps[map_id]);
+	LoadMapBricks(save_data->edited_maps[map_id]);
 	num_bricks = GetDefaultNumBricks();
 }
 
@@ -79,8 +79,8 @@ MapBrick *MapGetBrick(int x, int y)
 void MapSetBrick(MapBrick *brick, int type)
 {
 	brick->type = type;
-	if(brick->type != BRICK_EMPTY) {
-		SpriteSetImage(&brick->sprite, brick_image_names[brick->type-BRICK_START]);
+	if(type != BRICK_EMPTY) {
+		SpriteSetImage(&brick->sprite, brick_image_names[type-BRICK_START]);
 	}
 }
 
