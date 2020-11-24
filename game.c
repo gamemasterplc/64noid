@@ -382,7 +382,7 @@ static bool TestBrickCollision(Ball *ball, int side)
 				break;
 		}
 		if(brick->type != BRICK_GOLD && brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2) {
-			if(rand() % POWERUP_APPEAR_RATE == 0 && brick->type != BRICK_ROCK1) {
+			if(rand() % POWERUP_APPEAR_RATE == 0 && brick->type != BRICK_ROCK1 && MapGetNumBricks() != 1) {
 				CreatePowerup(powerup_x, powerup_y);
 			}
 		}
@@ -657,8 +657,8 @@ static void UpdateBullets()
 				}
 				MapDestroyBrick(brick);
 				bullets[i].exists = false;
-				if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1 && brick->type != BRICK_GOLD) {
-					if(rand() % POWERUP_APPEAR_RATE == 0) {
+				if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1) {
+					if(rand() % POWERUP_APPEAR_RATE == 0 && brick->type != BRICK_GOLD && MapGetNumBricks() != 1) {
 						float powerup_x = ((int)(bullets[i].x/MAP_BRICK_W)*MAP_BRICK_W)+(MAP_BRICK_W/2.0f);
 						float powerup_y = ((int)((bullets[i].y-4)/MAP_BRICK_H)*MAP_BRICK_H)+(MAP_BRICK_H/2.0f);
 						CreatePowerup(powerup_x, powerup_y);
