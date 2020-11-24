@@ -157,7 +157,7 @@ static bool IsMapEmpty()
 static void UpdateBrickSelect()
 {
 	if(brick_repeat_timer == 0) {
-		if(pad_data[0].button & L_TRIG) {
+		if(pad_data[0].trigger & L_TRIG) {
 			if(brick_type == 0) {
 				brick_type = (sizeof(brick_types)/sizeof(char))-1;
 			} else {
@@ -165,7 +165,7 @@ static void UpdateBrickSelect()
 			}
 			brick_repeat_timer = INPUT_REPEAT_DELAY;
 		}
-		if(pad_data[0].button & R_TRIG) {
+		if(pad_data[0].trigger & R_TRIG) {
 			if(brick_type >= (sizeof(brick_types)/sizeof(char))-1) {
 				brick_type = 0;
 			} else {
