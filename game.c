@@ -426,11 +426,13 @@ static void UpdateBalls()
 					if(num_balls == 0) {
 						reset_field = true;
 						game_globals.num_lives--;
-						if(game_globals.num_lives <= 0 && !game_globals.edit_mode) {
-							SaveWrite();
-							SetNextStage(STAGE_END);
-						} else if (game_globals.edit_mode) {
-							SetNextStage(STAGE_MAPEDITOR);
+						if(game_globals.num_lives <= 0) {
+							if (game_globals.edit_mode) {
+								SetNextStage(STAGE_MAPEDITOR);
+							} else {
+								SaveWrite();
+								SetNextStage(STAGE_END);
+							}
 						}
 					}
 				}
