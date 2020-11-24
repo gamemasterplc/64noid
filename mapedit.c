@@ -204,6 +204,8 @@ void MapEditorUpdate()
 		SetNextStage(STAGE_TITLE);
 	}
 	if(pad_data[0].trigger & START_BUTTON && !IsMapEmpty()) {
+		game_globals.score = 0;
+		game_globals.num_lives = 5;
 		SetNextStage(STAGE_GAME);
 	}
 }
