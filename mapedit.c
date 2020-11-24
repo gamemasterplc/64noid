@@ -177,7 +177,7 @@ static void UpdateCursor()
 	} else {
 		cursor_repeat_timer--;
 	}
-	if(pad_data[0].button & A_BUTTON) {
+	if(pad_data[0].trigger & A_BUTTON) {
 		save_data->edited_maps[game_globals.map_num][(cursor_y*MAP_WIDTH)+cursor_x] = brick_types[brick_type];
 		MapSetBrick(MapGetBrick(cursor_x, cursor_y), brick_types[brick_type]);
 	}
