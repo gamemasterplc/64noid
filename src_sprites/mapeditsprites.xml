@@ -34,6 +34,10 @@
 		<image filename="game/border.png" id="border" format="ia4" origin_x="0.0" origin_y="0.0"/>
 		<image filename="mapedit/button_l.png" id="button_l"/>
 		<image filename="mapedit/button_r.png" id="button_r"/>
+		<image filename="mapedit/button_a.png" id="button_a" origin_x="0.0" origin_y="0.0"/>
+		<image filename="mapedit/button_b.png" id="button_b" origin_x="0.0" origin_y="0.0"/>
+		<image filename="mapedit/button_z.png" id="button_z" origin_x="0.0" origin_y="0.0"/>
+		<image filename="mapedit/button_start.png" id="button_start" origin_x="0.0" origin_y="0.0"/>
 		<image filename="mapedit/cursor_0.png" id="cursor_0"/>
 		<image filename="mapedit/cursor_1.png" id="cursor_1"/>
 		<image filename="mapedit/cursor_2.png" id="cursor_2"/>

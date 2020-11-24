@@ -29,6 +29,22 @@ static int cursor_repeat_timer;
 static int brick_repeat_timer;
 static int brick_type = 5;
 
+struct control {
+	char *image_name;
+	char *text;
+	SpriteInfo *sprite;
+};
+
+static struct control controls_list[] = {
+	{ "button_a", "Place Brick", NULL },
+	{ "button_b", "Save and Exit", NULL },
+	{ "button_z", "Clear Level", NULL },
+	{ "button_start", "Play Level", NULL },
+};
+
+static int num_controls = sizeof(controls_list)/sizeof(struct control);
+static int controls_y = (SCREEN_H-24-((sizeof(controls_list)/sizeof(struct control))*9));
+
 static char *brick_images[] = {
 	"brick_white",
 	"brick_orange",
@@ -95,6 +111,16 @@ static void BorderInit()
 	SpriteSetImage(sprite_border, "border");
 }
 
+static void ControlsInit()
+{
+	int i;
+	for(i=0; i<num_controls; i++) {
+		controls_list[i].sprite = SpriteCreate(mapedit_sprite_data);
+		SpriteSetPos(controls_list[i].sprite, UI_BASE_POS_X, controls_y+(i*9));
+		SpriteSetImage(controls_list[i].sprite, controls_list[i].image_name);
+	}
+}
+
 void MapEditorInit()
 {
 	RenderSetSize(SCREEN_W, SCREEN_H);
@@ -104,7 +130,17 @@ void MapEditorInit()
 	CursorInit();
 	LevelButtonInit();
 	BorderInit();
+	ControlsInit();
 	cursor_repeat_timer = brick_repeat_timer = 0;
+}
+
+static void ClearMap()
+{
+	int i;
+	for(i=0; i<MAP_WIDTH*MAP_HEIGHT; i++) {
+		save_data->edited_maps[game_globals.map_num][i] = BRICK_EMPTY;
+		MapSetBrick(MapGetBrick(i%MAP_WIDTH, i/MAP_WIDTH), BRICK_EMPTY);
+	}
 }
 
 static void UpdateBrickSelect()
@@ -129,6 +165,9 @@ static void UpdateBrickSelect()
 		UpdateBrickSprite();
 	} else {
 		brick_repeat_timer--;
+	}
+	if(pad_data[0].trigger & Z_TRIG) {
+		ClearMap();
 	}
 }
 
@@ -210,11 +249,20 @@ void MapEditorUpdate()
 	}
 }
 
-static DrawMapNumber()
+static void DrawMapNumber()
 {
 	char text_buf[64];
 	sprintf(text_buf, "Level %d", game_globals.map_num+1);
 	TextDraw(UI_CENTER_POS_X, 24, TEXT_ALIGNMENT_CENTER, text_buf);
+}
+
+static void DrawControls()
+{
+	int i;
+	for(i=0; i<num_controls; i++) {
+		SpriteDraw(controls_list[i].sprite);
+		TextDraw(UI_BASE_POS_X+9, controls_y+(i*9), TEXT_ALIGNMENT_LEFT, controls_list[i].text);
+	}
 }
 
 void MapEditorDraw()
@@ -231,12 +279,22 @@ void MapEditorDraw()
 	DrawMapNumber();
 	SpriteDraw(sprite_c_left);
 	SpriteDraw(sprite_c_right);
+	DrawControls();
+}
+
+static void DestroyControls()
+{
+	int i;
+	for(i=0; i<num_controls; i++) {
+		SpriteDelete(controls_list[i].sprite);
+	}
 }
 
 void MapEditorDestroy()
 {
 	MapUnload();
 	SpriteFreeData(mapedit_sprite_data);
+	DestroyControls();
 	SpriteDelete(sprite_border);
 	SpriteDelete(sprite_cursor);
 	SpriteDelete(sprite_brick);
