@@ -136,7 +136,7 @@ static void UpdateMapNumber()
 {
 	if(pad_data[0].trigger & L_CBUTTONS) {
 		if(game_globals.map_num == 0) {
-			game_globals.map_num = MAX_EDITOR_MAPS;
+			game_globals.map_num = MAX_EDITOR_MAPS-1;
 		} else {
 			game_globals.map_num--;
 		}
