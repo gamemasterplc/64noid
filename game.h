@@ -13,6 +13,7 @@ typedef struct game_globals {
 	int num_lives;
 	int map_num;
 	int score;
+	bool edit_mode;
 } GameGlobals;
 
 extern GameGlobals game_globals;

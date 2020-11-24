@@ -238,7 +238,11 @@ void StageGameInit()
 	InitPowerups();
 	InitBullets();
 	CreateFirstBall();
-	MapLoad(game_globals.map_num);
+	if(game_globals.edit_mode) {
+		MapLoadSave(game_globals.map_num);
+	} else {
+		MapLoad(game_globals.map_num);
+	}
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
 	SpriteSetPos(border_sprite, MAP_X_OFS-8, MAP_Y_OFS-8);
@@ -648,7 +652,7 @@ static void UpdateBullets()
 				}
 				MapDestroyBrick(brick);
 				bullets[i].exists = false;
-				if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1) {
+				if(brick->type != BRICK_ROCK3 && brick->type != BRICK_ROCK2 && brick->type != BRICK_ROCK1 && brick->type != BRICK_GOLD) {
 					if(rand() % POWERUP_APPEAR_RATE == 0) {
 						float powerup_x = ((int)(bullets[i].x/MAP_BRICK_W)*MAP_BRICK_W)+(MAP_BRICK_W/2.0f);
 						float powerup_y = ((int)((bullets[i].y-4)/MAP_BRICK_H)*MAP_BRICK_H)+(MAP_BRICK_H/2.0f);
@@ -669,12 +673,16 @@ void StageGameUpdate()
 	UpdatePowerups();
 	UpdateBullets();
 	if(MapGetNumBricks() == 0) {
-		game_globals.map_num++;
-		if(game_globals.map_num == num_maps) {
-			SetNextStage(STAGE_END);
+		if(game_globals.edit_mode) {
+			
 		} else {
-			SetNextStage(STAGE_NEXTMAP);
+			if(game_globals.map_num == num_maps-1) {
+				SetNextStage(STAGE_END);
+			} else {
+				SetNextStage(STAGE_NEXTMAP);
+			}
 		}
+		
 	}
 }
 
@@ -744,6 +752,9 @@ void StageGameDraw()
 
 void StageGameDestroy()
 {
+	if(!game_globals.edit_mode) {
+		game_globals.map_num++;
+	}
 	MapUnload();
 	SpriteDelete(border_sprite);
 	free(game_sprites);

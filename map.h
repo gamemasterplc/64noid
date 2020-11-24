@@ -22,6 +22,7 @@ typedef struct map_brick {
 } MapBrick;
 
 void MapLoad(int map_id);
+void MapLoadSave(int map_id);
 MapBrick *MapGetBrick(int x, int y);
 void MapDestroyBrick(MapBrick *brick);
 void MapUnload();

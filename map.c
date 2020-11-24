@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include "map.h"
+#include "save.h"
 #include "bool.h"
 
 extern char *mapdata_table[];
@@ -56,6 +57,14 @@ void MapLoad(int map_id)
 	brick_spr_data = SpriteLoadFile("bricksprites.spr");
 	brick_map = malloc(MAP_WIDTH*MAP_HEIGHT*sizeof(MapBrick));
 	LoadMapBricks(mapdata_table[map_id]);
+	num_bricks = GetDefaultNumBricks();
+}
+
+void MapLoadSave(int map_id)
+{
+	brick_spr_data = SpriteLoadFile("bricksprites.spr");
+	brick_map = malloc(MAP_WIDTH*MAP_HEIGHT*sizeof(MapBrick));
+	LoadMapBricks(&save_data->edited_maps[map_id]);
 	num_bricks = GetDefaultNumBricks();
 }
 
