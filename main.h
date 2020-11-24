@@ -16,6 +16,7 @@ typedef enum stage_id {
 	STAGE_GAME,
 	STAGE_END,
 	STAGE_TITLE,
+	STAGE_MAPEDITOR,
 	STAGE_MAX,
 	STAGE_NONE = -1
 } StageID;

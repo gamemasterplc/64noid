@@ -35,7 +35,7 @@ void TitleUpdate()
 		SetNextStage(STAGE_NEXTMAP);
 	}
 	if((pad_data[0].button & (L_TRIG|R_TRIG)) == (L_TRIG|R_TRIG)) {
-		SetNextStage(STAGE_MAPSELECT);
+		SetNextStage(STAGE_MAPEDITOR);
 	}
 }
 

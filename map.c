@@ -76,6 +76,15 @@ MapBrick *MapGetBrick(int x, int y)
 	return NULL;
 }
 
+void MapSetBrick(MapBrick *brick, int type)
+{
+	brick->type = type;
+	if(brick->type != BRICK_EMPTY) {
+		SpriteSetImage(&brick->sprite, brick_image_names[brick->type-BRICK_START]);
+	}
+}
+
+
 void MapDestroyBrick(MapBrick *brick)
 {
 	switch(brick->type) {
@@ -83,20 +92,17 @@ void MapDestroyBrick(MapBrick *brick)
 			return;
 			
 		case BRICK_ROCK3:
-			brick->type = BRICK_ROCK2;
+			MapSetBrick(brick, BRICK_ROCK2);
 			break;
 			
 		case BRICK_ROCK2:
-			brick->type = BRICK_ROCK1;
+			MapSetBrick(brick, BRICK_ROCK1);
 			break;
 			
 		default:
-			brick->type = BRICK_EMPTY;
+			MapSetBrick(brick, BRICK_EMPTY);
 			num_bricks--;
 			break;
-	}
-	if(brick->type != BRICK_EMPTY) {
-		SpriteSetImage(&brick->sprite, brick_image_names[brick->type-BRICK_START]);
 	}
 }
 

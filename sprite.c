@@ -490,6 +490,7 @@ static void UpdateSpriteAnim(SpriteInfo *sprite)
 		}
 		//Advance to Next Image
 		sprite->curr_image = &sprite->data->images[sprite->curr_anim->frames[sprite->anim_frame].image_idx];
+		sprite->anim_time = 0;
 	}
 }
 

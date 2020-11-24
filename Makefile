@@ -3,7 +3,7 @@ N64KITDIR	= c:/nintendo/n64kit
 TARGET = 64noid
 CODEFILES = main.c pad.c save.c render.c text.c sprite.c \
 hash.c file.c game.c map.c mapdata.c mapsel.c nextmap.c stageend.c \
-title.c \
+title.c mapedit.c \
 
 OTHERFILES = 
 

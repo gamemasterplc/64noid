@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sprite>
+	<animations>
+		<animation id="cursor_pulsate">
+			<frame image="cursor_0" delay="3"/>
+			<frame image="cursor_1" delay="3"/>
+			<frame image="cursor_2" delay="3"/>
+			<frame image="cursor_3" delay="3"/>
+			<frame image="cursor_4" delay="3"/>
+			<frame image="cursor_5" delay="3"/>
+			<frame image="cursor_6" delay="3"/>
+			<frame image="cursor_7" delay="3"/>
+			<frame image="cursor_6" delay="3"/>
+			<frame image="cursor_5" delay="3"/>
+			<frame image="cursor_4" delay="3"/>
+			<frame image="cursor_3" delay="3"/>
+			<frame image="cursor_2" delay="3"/>
+			<frame image="cursor_1" delay="3"/>
+		</animation>
+	</animations>
+	<images>
+		<image filename="bricks/brick_white.png" id="brick_white"/>
+		<image filename="bricks/brick_orange.png" id="brick_orange"/>
+		<image filename="bricks/brick_cyan.png" id="brick_cyan"/>
+		<image filename="bricks/brick_green.png" id="brick_green"/>
+		<image filename="bricks/brick_red.png" id="brick_red"/>
+		<image filename="bricks/brick_blue.png" id="brick_blue"/>
+		<image filename="bricks/brick_magenta.png" id="brick_magenta"/>
+		<image filename="bricks/brick_yellow.png" id="brick_yellow"/>
+		<image filename="bricks/brick_rock3.png" id="brick_rock3"/>
+		<image filename="bricks/brick_gold.png" id="brick_gold"/>
+		<image filename="mapedit/button_c_left.png" id="button_c_left"/>
+		<image filename="mapedit/button_c_right.png" id="button_c_right"/>
+		<image filename="game/border.png" id="border" format="ia4" origin_x="0.0" origin_y="0.0"/>
+		<image filename="mapedit/button_l.png" id="button_l"/>
+		<image filename="mapedit/button_r.png" id="button_r"/>
+		<image filename="mapedit/cursor_0.png" id="cursor_0"/>
+		<image filename="mapedit/cursor_1.png" id="cursor_1"/>
+		<image filename="mapedit/cursor_2.png" id="cursor_2"/>
+		<image filename="mapedit/cursor_3.png" id="cursor_3"/>
+		<image filename="mapedit/cursor_4.png" id="cursor_4"/>
+		<image filename="mapedit/cursor_5.png" id="cursor_5"/>
+		<image filename="mapedit/cursor_6.png" id="cursor_6"/>
+		<image filename="mapedit/cursor_7.png" id="cursor_7"/>
+	</images>
+</sprite>

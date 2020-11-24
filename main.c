@@ -9,6 +9,7 @@
 #include "mapsel.h"
 #include "nextmap.h"
 #include "stageend.h"
+#include "mapedit.h"
 #include "title.h"
 #include "save.h"
 
@@ -20,6 +21,7 @@ static StageEntry stage_table[STAGE_MAX] = {
 	{ StageGameInit, StageGameUpdate, StageGameDraw, StageGameDestroy },
 	{ StageEndInit, StageEndUpdate, StageEndDraw, StageEndDestroy },
 	{ TitleInit, TitleUpdate, TitleDraw, TitleDestroy },
+	{ MapEditorInit, MapEditorUpdate, MapEditorDraw, MapEditorDestroy },
 };
 
 static volatile StageID next_stage;
