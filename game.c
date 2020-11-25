@@ -387,7 +387,7 @@ static bool TestBrickCollision(Ball *ball, int side)
 			}
 		}
 		game_globals.score += GetBrickWorth(brick);
-		if(game_globals.score > save_data->high_score) {
+		if(game_globals.score > save_data->high_score && !game_globals.edit_mode) {
 			save_data->high_score = game_globals.score;
 			game_globals.update_high_score = true;
 		}
@@ -655,7 +655,7 @@ static void UpdateBullets()
 			brick = MapGetBrick(bullets[i].x/MAP_BRICK_W, (bullets[i].y-4)/MAP_BRICK_H);
 			if(brick && brick->type != BRICK_EMPTY) {
 				game_globals.score += GetBrickWorth(brick);
-				if(game_globals.score > save_data->high_score) {
+				if(game_globals.score > save_data->high_score && !game_globals.edit_mode) {
 					save_data->high_score = game_globals.score;
 					game_globals.update_high_score = true;
 				}
@@ -736,18 +736,27 @@ static void DrawBullets()
 static void DrawHUD()
 {
 	char text_buf[64];
-	TextDraw(UI_POS_X, 24, TEXT_ALIGNMENT_LEFT, "High Score");
-	sprintf(text_buf, "%d", save_data->high_score);
-	TextDraw(UI_POS_X, 33, TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw(UI_POS_X, 60, TEXT_ALIGNMENT_LEFT, "Score");
-	sprintf(text_buf, "%d", game_globals.score);
-	TextDraw(UI_POS_X, 69, TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw(UI_POS_X, (SCREEN_H/2)-9, TEXT_ALIGNMENT_LEFT, "Lives");
-	sprintf(text_buf, "%d", game_globals.num_lives);
-	TextDraw(UI_POS_X, (SCREEN_H/2), TEXT_ALIGNMENT_LEFT, text_buf);
-	TextDraw(UI_POS_X, (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Level");
-	sprintf(text_buf, "%d", game_globals.map_num+1);
-	TextDraw(UI_POS_X, (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
+	if(!game_globals.edit_mode) {
+		TextDraw(UI_POS_X, 24, TEXT_ALIGNMENT_LEFT, "High Score");
+		sprintf(text_buf, "%d", save_data->high_score);
+		TextDraw(UI_POS_X, 33, TEXT_ALIGNMENT_LEFT, text_buf);
+		TextDraw(UI_POS_X, 60, TEXT_ALIGNMENT_LEFT, "Score");
+		sprintf(text_buf, "%d", game_globals.score);
+		TextDraw(UI_POS_X, 69, TEXT_ALIGNMENT_LEFT, text_buf);
+		TextDraw(UI_POS_X, (SCREEN_H/2)-9, TEXT_ALIGNMENT_LEFT, "Lives");
+		sprintf(text_buf, "%d", game_globals.num_lives);
+		TextDraw(UI_POS_X, (SCREEN_H/2), TEXT_ALIGNMENT_LEFT, text_buf);
+		TextDraw(UI_POS_X, (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Level");
+		sprintf(text_buf, "%d", game_globals.map_num+1);
+		TextDraw(UI_POS_X, (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
+	} else {
+		TextDraw(UI_POS_X, 24, TEXT_ALIGNMENT_LEFT, "Score");
+		sprintf(text_buf, "%d", game_globals.score);
+		TextDraw(UI_POS_X, 33, TEXT_ALIGNMENT_LEFT, text_buf);
+		TextDraw(UI_POS_X, (SCREEN_H-42), TEXT_ALIGNMENT_LEFT, "Lives");
+		sprintf(text_buf, "%d", game_globals.num_lives);
+		TextDraw(UI_POS_X, (SCREEN_H-33), TEXT_ALIGNMENT_LEFT, text_buf);
+	}
 }
 
 void StageGameDraw()
