@@ -24,7 +24,10 @@
 #define POWERUP_FALL_SPEED 0.833
 #define POWERUP_APPEAR_RATE 10
 #define STICK_DEADZONE 10
+#define PAUSE_STICK_DEADZONE 32
+#define PAUSE_STICK_DELAY 10
 #define STICK_X_RANGE 64
+#define PAUSE_FADE_DURATION 8
 #define UI_POS_X (MAP_X_OFS+(MAP_WIDTH*MAP_BRICK_W)+12)
 
 #define HIT_SIDE_TOP 0
@@ -90,6 +93,11 @@ typedef struct bullet {
 	SpriteInfo sprite;
 } Bullet;
 
+typedef struct pause_option {
+	char *name;
+	void (*activate_func)();
+} PauseOption;
+
 GameGlobals game_globals;
 
 static Ball balls[MAX_BALLS];
@@ -97,6 +105,9 @@ static PowerUp powerups[MAX_POWERUPS];
 static Bullet bullets[MAX_BULLETS];
 static Paddle paddle;
 static int num_balls;
+static bool paused;
+static int pause_stick_timer;
+static int pause_pos;
 static SpriteData *game_sprites;
 static SpriteInfo *border_sprite;
 
@@ -246,6 +257,8 @@ void StageGameInit()
 	border_sprite = SpriteCreate(game_sprites);
 	SpriteSetImage(border_sprite, "border");
 	SpriteSetPos(border_sprite, MAP_X_OFS-8, MAP_Y_OFS-8);
+	paused = false;
+	pause_pos = 0;
 }
 
 static bool TestPaddleCollision(Ball *ball)
@@ -675,26 +688,78 @@ static void UpdateBullets()
 	}
 }
 
+static void UnpauseGame()
+{
+	paused = false;
+}
+
+static void QuitGame()
+{
+	if(game_globals.edit_mode) {
+		SetNextStage(STAGE_MAPEDITOR);
+	} else {
+		if(game_globals.update_high_score) {
+			SaveWrite();
+		}
+		SetNextStage(STAGE_TITLE);
+	}
+}
+
+static PauseOption pause_options[] = {
+	{ "Continue", UnpauseGame },
+	{ "Quit", QuitGame }
+};
+
+static int num_pause_options = sizeof(pause_options)/sizeof(PauseOption);
+static int pause_options_y = (SCREEN_H-((sizeof(pause_options)/sizeof(PauseOption))*9))/2;
+
 void StageGameUpdate()
 {
-	UpdatePaddle();
-	UpdateBalls();
-	UpdatePowerups();
-	UpdateBullets();
-	if(MapGetNumBricks() == 0) {
-		if(game_globals.edit_mode) {
-			SetNextStage(STAGE_MAPEDITOR);
-		} else {
-			if(game_globals.map_num == num_maps-1) {
-				if(game_globals.update_high_score) {
-					SaveWrite();
-				}
-				SetNextStage(STAGE_END);
+	if(!paused) {
+		UpdatePaddle();
+		UpdateBalls();
+		UpdatePowerups();
+		UpdateBullets();
+		if(MapGetNumBricks() == 0) {
+			if(game_globals.edit_mode) {
+				SetNextStage(STAGE_MAPEDITOR);
 			} else {
-				SetNextStage(STAGE_NEXTMAP);
+				if(game_globals.map_num == num_maps-1) {
+					if(game_globals.update_high_score) {
+						SaveWrite();
+					}
+					SetNextStage(STAGE_END);
+				} else {
+					SetNextStage(STAGE_NEXTMAP);
+				}
 			}
 		}
-		
+		if(pad_data[0].trigger & START_BUTTON) {
+			pause_pos = 0;
+			paused = true;
+		}
+	} else {
+		if(pause_stick_timer == 0) {
+			if(pad_data[0].stick_y <= -PAUSE_STICK_DEADZONE) {
+				pause_pos--;
+				if(pause_pos < 0) {
+					pause_pos = num_pause_options-1;
+				}
+				pause_stick_timer = PAUSE_STICK_DELAY;
+			}
+			if(pad_data[0].stick_y >= PAUSE_STICK_DEADZONE) {
+				pause_pos++;
+				if(pause_pos >= num_pause_options) {
+					pause_pos = 0;
+				}
+				pause_stick_timer = PAUSE_STICK_DELAY;
+			}
+		} else {
+			pause_stick_timer--;
+		}
+		if(pad_data[0].trigger & (A_BUTTON|START_BUTTON)) {
+			pause_options[pause_pos].activate_func();
+		}
 	}
 }
 
@@ -759,16 +824,33 @@ static void DrawHUD()
 	}
 }
 
+static void DrawPauseOtions()
+{
+	int i;
+	for(i=0; i<num_pause_options; i++) {
+		if(pause_pos == i) {
+			TextSetColor(0, 255, 0, 255);
+		} else {
+			TextSetColor(255, 255, 255, 255);
+		}
+		TextDraw((SCREEN_W/2), pause_options_y+(i*9), TEXT_ALIGNMENT_CENTER, pause_options[i].name);
+	}
+}
+
 void StageGameDraw()
 {
 	RenderClear(0, 0, 0);
-	SpriteDraw(border_sprite);
-	MapDraw();
-	DrawPaddle();
-	DrawPowerups();
-	DrawBalls();
-	DrawBullets();
-	DrawHUD();
+	if(!paused) {
+		SpriteDraw(border_sprite);
+		MapDraw();
+		DrawPaddle();
+		DrawPowerups();
+		DrawBalls();
+		DrawBullets();
+		DrawHUD();
+	} else {
+		DrawPauseOtions();
+	}
 }
 
 void StageGameDestroy()

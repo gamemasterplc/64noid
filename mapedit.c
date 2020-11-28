@@ -46,6 +46,7 @@ static int num_controls = sizeof(controls_list)/sizeof(struct control);
 static int controls_y = (SCREEN_H-24-((sizeof(controls_list)/sizeof(struct control))*9));
 
 static char *brick_images[] = {
+	"brick_empty",
 	"brick_white",
 	"brick_orange",
 	"brick_cyan",
@@ -76,9 +77,7 @@ static void CursorInit()
 
 static void UpdateBrickSprite()
 {
-	if(brick_type) {
-		SpriteSetImage(sprite_brick, brick_images[brick_type-1]);
-	}
+	SpriteSetImage(sprite_brick, brick_images[brick_type]);
 }
 
 static void BrickInit()
@@ -277,9 +276,7 @@ void MapEditorDraw()
 	MapDraw();
 	SpriteDraw(sprite_border);
 	SpriteDraw(sprite_cursor);
-	if(brick_type != 0) {
-		SpriteDraw(sprite_brick);
-	}
+	SpriteDraw(sprite_brick);
 	SpriteDraw(sprite_l_button);
 	SpriteDraw(sprite_r_button);
 	DrawMapNumber();

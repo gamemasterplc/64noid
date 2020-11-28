@@ -19,6 +19,7 @@
 		</animation>
 	</animations>
 	<images>
+		<image filename="mapedit/brick_empty.png" id="brick_empty"/>
 		<image filename="bricks/brick_white.png" id="brick_white"/>
 		<image filename="bricks/brick_orange.png" id="brick_orange"/>
 		<image filename="bricks/brick_cyan.png" id="brick_cyan"/>
