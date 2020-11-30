@@ -31,7 +31,6 @@ void TitleInit()
 	logo_sprite = SpriteCreate(title_data);
 	SpriteSetImage(logo_sprite, "logo");
 	SpriteSetPos(logo_sprite, (SCREEN_W/2), 24);
-	cursor_pos = 0;
 	cursor_delay = 0;
 }
 
