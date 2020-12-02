@@ -122,7 +122,7 @@ static char map7_data[MAP_WIDTH*MAP_HEIGHT] = {
 	"..fggggf.."
 	".ffgghgff."
 	".ffgghgff."
-	"ffghhchgff"
+	"ffghcchgff"
 	"ffgh..hgff"
 	"ffg....gff"
 	"ff......ff"

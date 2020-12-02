@@ -55,8 +55,8 @@ static void StartLevelEditor()
 }
 
 static struct menu_option menu_options[] = {
-	{ "Game", StartGame },
-	{ "Level Editor", StartLevelEditor },
+	{ "Play", StartGame },
+	{ "Edit", StartLevelEditor },
 };
 
 static int num_menu_options = sizeof(menu_options)/sizeof(struct menu_option);
