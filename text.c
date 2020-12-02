@@ -208,7 +208,12 @@ static int GetTextWidth(char *str)
 	if(line_w > w) {
 		w = line_w;
 	}
-	return w;
+	if(w > 0) {
+		return w-1;
+	} else {
+		return 0;
+	}
+	
 }
 
 void TextDraw(int x, int y, int alignment, char *str)
