@@ -133,6 +133,25 @@ static char map7_data[MAP_WIDTH*MAP_HEIGHT] = {
 	".........."
 };
 
+static char map8_data[MAP_WIDTH*MAP_HEIGHT] = {
+	".........."
+	"....b....."
+	"....b....."
+	"....b....."
+	"....bbbbbb"
+	".bbbb...b."
+	"h...h..h.."
+	"h...h.h..."
+	"h...h..h.."
+	"h...h...h."
+	"d...d....d"
+	".dddd....d"
+	"....d....d"
+	".....d..d."
+	"......dd.."
+	".........."
+};
+
 char *mapdata_table[] = {
 	map1_data,
 	map2_data,
@@ -141,6 +160,7 @@ char *mapdata_table[] = {
 	map5_data,
 	map6_data,
 	map7_data,
+	map8_data,
 };
 
 int num_maps = sizeof(mapdata_table)/sizeof(char *);
