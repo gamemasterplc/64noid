@@ -44,7 +44,7 @@
 #define POWERUP_CATCH 6
 #define POWERUP_BALL_SHRINK 7
 #define POWERUP_NEXT_LEVEL 8
-#define POWERUP_MAX 9
+#define POWERUP_COUNT 9
 
 #define BALL_SIZE_NORMAL 0
 #define BALL_SIZE_BIG 1
@@ -113,7 +113,7 @@ static int pause_pos;
 static SpriteData *game_sprites;
 static SpriteInfo *border_sprite;
 
-static char *powerup_images[POWERUP_MAX] = {
+static char *powerup_images[POWERUP_COUNT] = {
 	"powerup_laser",
 	"powerup_enlarge",
 	"powerup_ball_enlarge",
@@ -289,7 +289,7 @@ static bool CheckBallSizeExist(int size)
 
 static int GetPowerupType()
 {
-	int base_type = rand() % POWERUP_MAX;
+	int base_type = rand() % POWERUP_COUNT;
 	if(base_type == POWERUP_LASER  && paddle.laser) {
 		return -1;
 	}
