@@ -15,6 +15,8 @@
 		<image filename="game/powerup_extra_life.png" id="powerup_extra_life"/>
 		<image filename="game/powerup_triple.png" id="powerup_triple"/>
 		<image filename="game/powerup_catch.png" id="powerup_catch"/>
+		<image filename="game/powerup_ball_shrink.png" id="powerup_ball_shrink"/>
+		<image filename="game/powerup_next_level.png" id="powerup_next_level"/>
 		<image filename="game/bullet.png" id="bullet"/>
 	</images>
 </sprite>
