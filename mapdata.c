@@ -209,6 +209,82 @@ static char map11_data[MAP_WIDTH*MAP_HEIGHT] = {
 	".........."
 };
 
+static char map12_data[MAP_WIDTH*MAP_HEIGHT] = {
+	".........."
+	"l........l"
+	"ll......ll"
+	".ll....ll."
+	"h.ll..ll.h"
+	"hh..ll..hh"
+	"chh....chh"
+	"cchh..cchh"
+	"fcchhcchhf"
+	"ffchhcchff"
+	".ffhhccff."
+	"..ffhcff.."
+	"...ffff..."
+	"....ff...."
+	".........."
+	".........."
+};
+
+static char map13_data[MAP_WIDTH*MAP_HEIGHT] = {
+	".........."
+	".ii.ii.ii."
+	".ie.id.ic."
+	".ii.ii.ii."
+	".........."
+	".........."
+	".ii.ii.ii."
+	".ih.il.ib."
+	".ii.ii.ii."
+	".........."
+	".........."
+	".ii.ii.ii."
+	".ig.if.ia."
+	".ii.ii.ii."
+	".........."
+	".........."
+};
+
+static char map14_data[MAP_WIDTH*MAP_HEIGHT] = {
+	"l........l"
+	"...e.f.d.."
+	"..h.c.b.c."
+	"...e.f.d.."
+	"..h.c.b.c."
+	"...e.f.d.."
+	"..h.c.b.c."
+	"...e.f.d.."
+	"..h.c.b.c."
+	"...e.f.d.."
+	"..h.c.b.c."
+	"...e.f.d.."
+	"..h.c.b.c."
+	"...e.f.d.."
+	"..h.c.b.c."
+	"l........l"
+};
+
+static char map15_data[MAP_WIDTH*MAP_HEIGHT] = {
+	".........."
+	".f.l..l.f."
+	".l......l."
+	"..ff......"
+	".fiff....."
+	"affff....a"
+	"lffffcc..l"
+	".ffffcc..."
+	".ffffccc.."
+	"..ffcccc.."
+	".aaacccc.."
+	"aaaacccc.a"
+	"laaaaccc.l"
+	".aaaa....."
+	".l.c..c.l."
+	"...c..c..."
+};
+
 char *mapdata_table[] = {
 	map1_data,
 	map2_data,
@@ -220,7 +296,11 @@ char *mapdata_table[] = {
 	map8_data,
 	map9_data,
 	map10_data,
-	map11_data
+	map11_data,
+	map12_data,
+	map13_data,
+	map14_data,
+	map15_data
 };
 
 int num_maps = sizeof(mapdata_table)/sizeof(char *);
