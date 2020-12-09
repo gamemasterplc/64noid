@@ -26,6 +26,9 @@ void StageEndInit()
 		SpriteSetImage(endtext_sprite, "youwin");
 	}
 	SpriteSetPos(endtext_sprite, SCREEN_W/2, 24);
+	if(game_globals.update_high_score) {
+		SaveWrite();
+	}
 }
 
 void StageEndUpdate()

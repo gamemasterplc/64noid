@@ -493,9 +493,6 @@ static void UpdateBalls()
 							if (game_globals.edit_mode) {
 								SetNextStage(STAGE_MAPEDITOR);
 							} else {
-								if(game_globals.update_high_score) {
-									SaveWrite();
-								}
 								SetNextStage(STAGE_END);
 							}
 						}
@@ -595,9 +592,6 @@ static void UpdatePaddle()
 static void AdvanceLevel()
 {
 	if(game_globals.map_num == num_maps-1) {
-		if(game_globals.update_high_score) {
-			SaveWrite();
-		}
 		SetNextStage(STAGE_END);
 	} else {
 		SetNextStage(STAGE_NEXTMAP);
@@ -789,9 +783,6 @@ void StageGameUpdate()
 				SetNextStage(STAGE_MAPEDITOR);
 			} else {
 				if(game_globals.map_num == num_maps-1) {
-					if(game_globals.update_high_score) {
-						SaveWrite();
-					}
 					SetNextStage(STAGE_END);
 				} else {
 					SetNextStage(STAGE_NEXTMAP);
