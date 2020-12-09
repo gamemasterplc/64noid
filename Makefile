@@ -13,7 +13,7 @@ OTHERFILES =
 
 include $(ROOT)/usr/include/make/PRdefs
 
-DEBUGSYM	= -g
+DEBUGSYM	=
 OPTIMIZER	= -O1
 
 NUSYSDIR = $(N64KITDIR)/nusys
@@ -30,7 +30,7 @@ CUSTFLAGS =
 LCDEFS = -DF3DEX_GBI_2
 LCINCS = -I$(NUSYSINC) -I$(NUSTDINC)
 LCOPTS = -G 0 $(DEBUGSYM) $(CUSTFLAGS)
-LDFLAGS = -L$(ROOT)/usr/lib -L$(ROOT)/usr/lib/PR -L$(NUSYSLIB) -L$(NUSTDLIB) -lnusys_d -lnustd_d -lgultra_d -L$(GCCDIR)/mipse/lib -lkmc
+LDFLAGS = -L$(ROOT)/usr/lib -L$(ROOT)/usr/lib/PR -L$(NUSYSLIB) -L$(NUSTDLIB) -lnusys -lnustd -lgultra_rom -L$(GCCDIR)/mipse/lib -lkmc
 
 CODESEGMENT	= codesegment.o
 OBJECTS	= $(CODESEGMENT) $(OTHEROBJECTS)
