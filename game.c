@@ -373,7 +373,12 @@ static int GetBrickWorth(MapBrick *brick)
 			return 0;
 		
 		case BRICK_ROCK1:
-			return (50*(game_globals.map_num+1));
+			if(game_globals.edit_mode) {
+				return 100;
+			} else {
+				return (50*(game_globals.map_num+1));
+			}
+			
 			
 		default:
 			return 50+(10*(brick->type-BRICK_START));
