@@ -290,7 +290,7 @@ static bool CheckBallSizeExist(int size)
 static int GetPowerupType()
 {
 	int base_type = rand() % POWERUP_COUNT;
-	if(base_type == POWERUP_LASER  && paddle.laser) {
+	if(base_type == POWERUP_LASER && (paddle.laser || game_globals.edit_mode)) {
 		return -1;
 	}
 	if(base_type == POWERUP_ENLARGE && paddle.type == PADDLE_TYPE_LONG) {
